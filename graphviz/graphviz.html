@@ -1,0 +1,370 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <script type="text/javascript" src="../../../dist/vis.js"></script>
+    <link href="../../../dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <script src="element-xpath-master/element-xpath.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../datasources/utils2.js"></script>
+    <script src="dict.js"></script>
+    <script src="../datasources/edges.js"></script>
+    <style type="text/css">
+        #mynetwork {
+            width: 800px;
+            height: 1000px;
+            border: 1px solid lightgray;
+        }
+
+        p {
+            max-width:600px;
+        }
+
+        h4 {
+            margin-bottom:3px;
+        }
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Create two equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 50%;
+            padding: 10px;
+            height: 300px; /* Should be removed. Only for demonstration */
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
+</head>
+<div class="row">
+<div class = "column">
+<div id="mynetwork"></div>
+<div id="output"></div>
+
+<script type="text/javascript">
+
+
+
+        function readSingleFile(evt) {
+        var f = evt.target.files[0];
+
+        if (f) {
+            var r = new FileReader();
+            r.onload = function (e) {
+                var contents = e.target.result;
+                document.getElementById("ReadResult").innerHTML = contents;
+            }
+            r.readAsText(f);
+        } else {
+            alert("Failed to load file");
+        }
+    }
+
+    document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+    var dictionary = dictionary;
+    alert(dictionary[0].xpath);
+    var dict = {};
+    for(var i = 0, emp; i < dictionary.length; i++){
+        emp = dictionary[i];
+        dict[emp.xpath] = emp.id;
+    }
+    // alert("/body[1]/table[1]/tbody[1]/tr[3]/td[1]/table[1]/tbody[1]/tr[12]/td[1]/table[1]/tbody[1]/tr[11]/td[1]/text()[1]");
+
+    
+    document.addEventListener("click", function (ev) {
+     getElementXpath(ev.toElement, function (err, xpath) {
+        document.getElementById("output").innerText += "\n" + xpath;
+        //alert(xpath);
+        
+        xpath = xpath.split("/");
+        xpath.shift();
+        xpath.shift();
+        xpath.shift();
+        xpath.shift();
+        xpath.shift();
+        var newxpath = xpath.join("/");
+        newxpath = "/body[1]/"+newxpath+"/text()[1]";
+        var id = dict[newxpath];
+        //alert(id);
+        resetAllNodes(id);
+      });
+    });
+
+    var nodeIds, shadowState, nodesArray, nodes, edgesArray0, edges, network;
+
+    var nodes = new vis.DataSet(nodesArray);
+    var edges = new vis.DataSet(edgesArray0);
+
+
+    function startNetwork() {
+        // this list is kept to remove a random node.. we do not add node 1 here because it's used for changes
+        nodeIds = [2, 3, 4, 5];
+        shadowState = false;
+
+
+        // create an array with nodes
+        // nodesArray = [
+        //     {id: 1, label: 'Node 1'},
+        //     {id: 2, label: 'Node 2'},
+        //     {id: 3, label: 'Node 3'},
+        //     {id: 4, label: 'Node 4'},
+        //     {id: 5, label: 'Node 5'}
+        // ];
+        // nodes = new vis.DataSet(nodesArray);
+
+        // // create an array with edges
+        // edgesArray = [
+        //     {from: 1, to: 3},
+        //     {from: 1, to: 2},
+        //     {from: 2, to: 4},
+        //     {from: 2, to: 5}
+        // ];
+        // edges = new vis.DataSet(edgesArray);
+
+        // create a network
+        var container = document.getElementById('mynetwork');
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {};
+        network = new vis.Network(container, data, options);
+    }
+
+    function addNode() {
+        var newId = (Math.random() * 1e7).toString(32);
+        nodes.add({id:newId, label:"I'm new!"});
+        nodeIds.push(newId);
+    }
+
+    function changeNode1() {
+        var newColor = '#' + Math.floor((Math.random() * 255 * 255 * 255)).toString(16);
+        nodes.update([{id:1, color:{background:newColor}}]);
+    }
+
+    function removeRandomNode() {
+        var randomNodeId = nodeIds[Math.floor(Math.random() * nodeIds.length)];
+        nodes.remove({id:randomNodeId});
+
+        var index = nodeIds.indexOf(randomNodeId);
+        nodeIds.splice(index,1);
+    }
+
+    function changeOptions() {
+        shadowState = !shadowState;
+        network.setOptions({nodes:{shadow:shadowState},edges:{shadow:shadowState}});
+    }
+
+    function resetAllNodes(id) {
+    	alert(id);
+    	var s = id;
+
+        nodes.clear();
+        edges.clear();
+        nodes.add(nodesArray);
+        if(s == 0)edges.add(edgesArray0);
+    if(s == 1)edges.add(edgesArray1);
+    if(s == 2)edges.add(edgesArray2);
+    if(s == 3)edges.add(edgesArray3);
+    if(s == 4)edges.add(edgesArray4);
+    if(s == 5)edges.add(edgesArray5);
+    if(s == 6)edges.add(edgesArray6);
+    if(s == 7)edges.add(edgesArray7);
+    if(s == 8)edges.add(edgesArray8);
+    if(s == 9)edges.add(edgesArray9);
+    if(s == 10)edges.add(edgesArray10);
+    if(s == 11)edges.add(edgesArray11);
+    if(s == 12)edges.add(edgesArray12);
+    if(s == 13)edges.add(edgesArray13);
+    if(s == 14)edges.add(edgesArray14);
+    if(s == 15)edges.add(edgesArray15);
+    if(s == 16)edges.add(edgesArray16);
+    if(s == 17)edges.add(edgesArray17);
+    if(s == 18)edges.add(edgesArray18);
+    if(s == 19)edges.add(edgesArray19);
+    if(s == 20)edges.add(edgesArray20);
+    if(s == 21)edges.add(edgesArray21);
+    if(s == 22)edges.add(edgesArray22);
+    if(s == 23)edges.add(edgesArray23);
+    if(s == 24)edges.add(edgesArray24);
+    if(s == 25)edges.add(edgesArray25);
+    if(s == 26)edges.add(edgesArray26);
+    if(s == 27)edges.add(edgesArray27);
+    if(s == 28)edges.add(edgesArray28);
+    if(s == 29)edges.add(edgesArray29);
+    if(s == 30)edges.add(edgesArray30);
+    if(s == 31)edges.add(edgesArray31);
+    if(s == 32)edges.add(edgesArray32);
+    if(s == 33)edges.add(edgesArray33);
+    if(s == 34)edges.add(edgesArray34);
+    if(s == 35)edges.add(edgesArray35);
+    if(s == 36)edges.add(edgesArray36);
+    if(s == 37)edges.add(edgesArray37);
+    if(s == 38)edges.add(edgesArray38);
+    if(s == 39)edges.add(edgesArray39);
+    if(s == 40)edges.add(edgesArray40);
+    if(s == 41)edges.add(edgesArray41);
+    if(s == 42)edges.add(edgesArray42);
+    if(s == 43)edges.add(edgesArray43);
+    if(s == 44)edges.add(edgesArray44);
+    if(s == 45)edges.add(edgesArray45);
+    if(s == 46)edges.add(edgesArray46);
+    if(s == 47)edges.add(edgesArray47);
+    if(s == 48)edges.add(edgesArray48);
+    if(s == 49)edges.add(edgesArray49);
+    if(s == 50)edges.add(edgesArray50);
+    if(s == 51)edges.add(edgesArray51);
+    if(s == 52)edges.add(edgesArray52);
+    if(s == 53)edges.add(edgesArray53);
+    if(s == 54)edges.add(edgesArray54);
+    if(s == 55)edges.add(edgesArray55);
+    if(s == 56)edges.add(edgesArray56);
+    if(s == 57)edges.add(edgesArray57);
+    if(s == 58)edges.add(edgesArray58);
+    if(s == 59)edges.add(edgesArray59);
+    if(s == 60)edges.add(edgesArray60);
+    if(s == 61)edges.add(edgesArray61);
+    if(s == 62)edges.add(edgesArray62);
+    if(s == 63)edges.add(edgesArray63);
+    if(s == 64)edges.add(edgesArray64);
+    if(s == 65)edges.add(edgesArray65);
+    if(s == 66)edges.add(edgesArray66);
+    if(s == 67)edges.add(edgesArray67);
+    if(s == 68)edges.add(edgesArray68);
+    if(s == 69)edges.add(edgesArray69);
+    if(s == 70)edges.add(edgesArray70);
+    if(s == 71)edges.add(edgesArray71);
+    if(s == 72)edges.add(edgesArray72);
+    if(s == 73)edges.add(edgesArray73);
+    if(s == 74)edges.add(edgesArray74);
+    if(s == 75)edges.add(edgesArray75);
+    if(s == 76)edges.add(edgesArray76);
+    if(s == 77)edges.add(edgesArray77);
+    if(s == 78)edges.add(edgesArray78);
+    if(s == 79)edges.add(edgesArray79);
+    if(s == 80)edges.add(edgesArray80);
+    if(s == 81)edges.add(edgesArray81);
+    if(s == 82)edges.add(edgesArray82);
+    if(s == 83)edges.add(edgesArray83);
+    if(s == 84)edges.add(edgesArray84);
+    if(s == 85)edges.add(edgesArray85);
+    if(s == 86)edges.add(edgesArray86);
+    if(s == 87)edges.add(edgesArray87);
+    if(s == 88)edges.add(edgesArray88);
+    if(s == 89)edges.add(edgesArray89);
+    if(s == 90)edges.add(edgesArray90);
+    if(s == 91)edges.add(edgesArray91);
+    if(s == 92)edges.add(edgesArray92);
+    if(s == 93)edges.add(edgesArray93);
+    if(s == 94)edges.add(edgesArray94);
+    if(s == 95)edges.add(edgesArray95);
+    if(s == 96)edges.add(edgesArray96);
+    if(s == 97)edges.add(edgesArray97);
+    if(s == 98)edges.add(edgesArray98);
+    if(s == 99)edges.add(edgesArray99);
+    if(s == 100)edges.add(edgesArray100);
+    if(s == 101)edges.add(edgesArray101);
+    if(s == 102)edges.add(edgesArray102);
+    if(s == 103)edges.add(edgesArray103);
+    if(s == 104)edges.add(edgesArray104);
+    if(s == 105)edges.add(edgesArray105);
+    if(s == 106)edges.add(edgesArray106);
+    if(s == 107)edges.add(edgesArray107);
+    if(s == 108)edges.add(edgesArray108);
+    if(s == 109)edges.add(edgesArray109);
+    if(s == 110)edges.add(edgesArray110);
+    if(s == 111)edges.add(edgesArray111);
+    if(s == 112)edges.add(edgesArray112);
+    if(s == 113)edges.add(edgesArray113);
+    if(s == 114)edges.add(edgesArray114);
+    if(s == 115)edges.add(edgesArray115);
+    if(s == 116)edges.add(edgesArray116);
+    if(s == 117)edges.add(edgesArray117);
+    if(s == 118)edges.add(edgesArray118);
+    if(s == 119)edges.add(edgesArray119);
+    if(s == 120)edges.add(edgesArray120);
+    if(s == 121)edges.add(edgesArray121);
+    if(s == 122)edges.add(edgesArray122);
+    if(s == 123)edges.add(edgesArray123);
+    if(s == 124)edges.add(edgesArray124);
+    if(s == 125)edges.add(edgesArray125);
+    if(s == 126)edges.add(edgesArray126);
+    if(s == 127)edges.add(edgesArray127);
+    if(s == 128)edges.add(edgesArray128);
+    if(s == 129)edges.add(edgesArray129);
+    if(s == 130)edges.add(edgesArray130);
+    if(s == 131)edges.add(edgesArray131);
+    if(s == 132)edges.add(edgesArray132);
+    if(s == 133)edges.add(edgesArray133);
+    if(s == 134)edges.add(edgesArray134);
+    if(s == 135)edges.add(edgesArray135);
+    if(s == 136)edges.add(edgesArray136);
+    if(s == 137)edges.add(edgesArray137);
+    if(s == 138)edges.add(edgesArray138);
+    if(s == 139)edges.add(edgesArray139);
+    if(s == 140)edges.add(edgesArray140);
+    if(s == 141)edges.add(edgesArray141);
+    if(s == 142)edges.add(edgesArray142);
+    if(s == 143)edges.add(edgesArray143);
+    if(s == 144)edges.add(edgesArray144);
+    if(s == 145)edges.add(edgesArray145);
+    if(s == 146)edges.add(edgesArray146);
+    if(s == 147)edges.add(edgesArray147);
+    if(s == 148)edges.add(edgesArray148);
+    if(s == 149)edges.add(edgesArray149);
+    if(s == 150)edges.add(edgesArray150);
+    if(s == 151)edges.add(edgesArray151);
+    if(s == 152)edges.add(edgesArray152);
+    if(s == 153)edges.add(edgesArray153);
+    if(s == 154)edges.add(edgesArray154);
+    if(s == 155)edges.add(edgesArray155);
+    if(s == 156)edges.add(edgesArray156);
+    if(s == 157)edges.add(edgesArray157);
+    if(s == 158)edges.add(edgesArray158);
+    if(s == 159)edges.add(edgesArray159);
+    if(s == 160)edges.add(edgesArray160);
+    if(s == 161)edges.add(edgesArray161);
+    if(s == 162)edges.add(edgesArray162);
+    if(s == 163)edges.add(edgesArray163);
+    if(s == 164)edges.add(edgesArray164);
+    }
+
+    function resetAllNodesStabilize() {
+        resetAllNodes();
+        network.stabilize();
+    }
+
+    function setTheData() {
+        nodes = new vis.DataSet(nodesArray2);
+        edges = new vis.DataSet(edgesArray2);
+        network.setData({nodes:nodes, edges:edges})
+
+    }
+
+    function resetAll() {
+        if (network !== null) {
+            network.destroy();
+            network = null;
+        }
+        startNetwork();
+    }
+
+    startNetwork();
+</script>
+</div>
+  <div class="column">
+        <input type="file" id="fileinput" />
+        <div id="ReadResult"></div>
+
+<div id="output"></div>
+  </div>
+
+</body>
+</html>

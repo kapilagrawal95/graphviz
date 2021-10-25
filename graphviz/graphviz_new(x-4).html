@@ -1,0 +1,1310 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <script type="text/javascript" src="../../../dist/vis.js"></script>
+    <link href="../../../dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <script src="element-xpath-master/element-xpath.js" type="text/javascript" charset="utf-8"></script>
+    <!-- <script src="../datasources/1.js"></script> -->
+    <!-- <script src="dict.js"></script> -->
+    <!-- <script src="../datasources/edges.js"></script> -->
+    <style type="text/css">
+
+    .slidecontainer {
+    width: 30%;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background:red;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 23px;
+    height: 24px;
+    border: 0;
+    background: #4CAF50;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 23px;
+    height: 24px;
+    border: 0;
+    background: url('contrasticon.png');
+    cursor: pointer;
+}
+        #mynetwork {
+            width: 800px;
+            height: 1000px;
+            border: 1px solid lightgray;
+        }
+
+        p {
+            max-width:600px;
+        }
+
+        h4 {
+            margin-bottom:3px;
+        }
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Create two equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 50%;
+            padding: 10px;
+            height: 300px; /* Should be removed. Only for demonstration */
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
+</head>
+<div class="row">
+  <div class = "column" id = "First">
+    <input type="file" id="fileinput"/>
+        <div id="ReadResult"></div>
+  </div>
+  <div class = "column">
+<textarea id="myTextarea">
+</textarea>
+<div class="slidecontainer">
+  <input type="range" min="0" max="100" value="100" class="slider" id="myRange">
+  <p>Value: <span id="demo"></span></p>
+</div>
+<button type="button" onclick="Run()">Run</button>
+<div id="mynetwork"></div>
+<div id="output"></div>
+
+<script type="text/javascript">
+
+    function getElementByXpath(path) {
+  return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+var elem = [];
+
+        var newnodesArray = [];
+        var newedgesArray = [];
+        var newnodesArray2 = [];
+        var newedgesArray2 = [];
+var slider = document.getElementById("myRange");
+var output2 = document.getElementById("demo");
+output2.innerHTML = slider.value;
+
+slider.oninput = function() {
+  output2.innerHTML = this.value;
+  var k = this.value;
+    edges.clear();
+  newArray = newedgesArray.filter(function (el) {
+  return el.label <= k; // Changed this so a home would match
+});
+  edges.add(newArray);
+  var options = {
+        scale: 0.7,
+        offset: {x:0,y:0},
+        animation: {
+          duration: 1000,
+          easingFunction: "easeInOutQuad"
+        }
+      };
+      // statusUpdateSpan.innerHTML = 'Focusing on node: ' + s;
+      // finishMessage = 'Node: ' + s + ' in focus.';
+      // alert(finishMessage);
+      network.focus(s, options);
+console.log(newedgesArray);
+}
+
+   var dict = {};
+    function inject(src, cb, target){
+        target = target || document.head;
+        var s = document.createElement('SCRIPT');
+        s.charset = 'UTF-8';
+        if(typeof cb === 'function'){ 
+            s.onload = function(){
+                cb(s);
+            }; 
+            s.onreadystatechange = function () {
+                (/loaded|complete/).test(s.readyState) && cb(s);
+            };                     
+        }
+        s.src = src;
+        target.appendChild(s);
+        return s;
+    }
+
+
+    function readSingleFile(evt) {
+                
+                var f = evt.target.files[0];
+                var filename = document.getElementById('fileinput').value;
+                filename = filename.split("fakepath");
+                var s = filename[1];
+                s = s.substr(1);
+                s = s.split(".");
+                var input1 = s[0];
+                input1 = input1+".js";
+                if (f) {
+                    var r = new FileReader();
+                    r.onload = function (e) {
+                        var contents = e.target.result;
+                        document.getElementById("ReadResult").innerHTML = contents;
+                    }
+                    r.readAsText(f);
+                } else {
+                    alert("Failed to load file");
+                }
+
+                input = "../datasources/walks(x^-4)/"+input1;
+                // alert(input);
+                inject(input, function(script){
+                var dicti = dictionary;
+                var leng = len_walk;
+                document.getElementById("myTextarea").defaultValue = leng;                // alert('yahan pahocha');
+                // alert(dicti.length);
+
+                for(var i = 0, emp; i < dicti.length; i++){
+                    emp = dicti[i];
+                    dict[emp.xpath] = emp.id;
+                }
+                })
+            }
+
+    document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+
+    document.getElementById('First').addEventListener("click", function (ev) {
+     getElementXpath(ev.toElement, function (err, xpath) {
+        document.getElementById("output").innerText += "\n" + xpath;
+        console.log(xpath);
+        xpath = xpath.split("/");
+        xpath.shift();
+        xpath.shift();
+        xpath.shift();
+        // alert(xpath);
+        xpath.shift();
+        xpath.shift();
+        xpath.shift();
+        // alert(xpath);
+        var newxpath = xpath.join("/");
+        newxpath = "/body[1]/"+newxpath+"/text()[1]";
+        var id = dict[newxpath];
+        // alert(id);
+        resetAllNodes(id);
+      });
+    });
+
+    var nodeIds, shadowState, nodesArray, nodes, edgesArray0, edges, network;
+
+    var nodes = new vis.DataSet(nodesArray);
+    var edges = new vis.DataSet(edgesArray0);
+
+
+    function startNetwork() {
+
+        nodeIds = [2, 3, 4, 5];
+        shadowState = false;
+
+        var container = document.getElementById('mynetwork');
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {};
+        network = new vis.Network(container, data, options);
+    }
+
+    function Run() {
+    for(i = 0; i<elem.length; i++){
+        elem[i].style.backgroundColor = "#FFFFFF";
+    }
+    var s = document.getElementById("myTextarea").value;
+    nodes.clear();
+    edges.clear();
+
+    // nodes.add(nodesArray);
+ if(s == 0){newedgesArray2 = walk0;newnodesArray2 = nodeswalk0}
+    if(s == 1){newedgesArray2 = walk1;newnodesArray2 = nodeswalk1}
+    if(s == 2){newedgesArray2 = walk2;newnodesArray2 = nodeswalk2}
+    if(s == 3){newedgesArray2 = walk3;newnodesArray2 = nodeswalk3}
+    if(s == 4){newedgesArray2 = walk4;newnodesArray2 = nodeswalk4}
+    if(s == 5){newedgesArray2 = walk5;newnodesArray2 = nodeswalk5}
+    if(s == 6){newedgesArray2 = walk6;newnodesArray2 = nodeswalk6}
+    if(s == 7){newedgesArray2 = walk7;newnodesArray2 = nodeswalk7}
+    if(s == 8){newedgesArray2 = walk8;newnodesArray2 = nodeswalk8}
+    if(s == 9){newedgesArray2 = walk9;newnodesArray2 = nodeswalk9}
+    if(s == 10){newedgesArray2 = walk10;newnodesArray2 = nodeswalk10}
+    if(s == 11){newedgesArray2 = walk11;newnodesArray2 = nodeswalk11}
+    if(s == 12){newedgesArray2 = walk12;newnodesArray2 = nodeswalk12}
+    if(s == 13){newedgesArray2 = walk13;newnodesArray2 = nodeswalk13}
+    if(s == 14){newedgesArray2 = walk14;newnodesArray2 = nodeswalk14}
+    if(s == 15){newedgesArray2 = walk15;newnodesArray2 = nodeswalk15}
+    if(s == 16){newedgesArray2 = walk16;newnodesArray2 = nodeswalk16}
+    if(s == 17){newedgesArray2 = walk17;newnodesArray2 = nodeswalk17}
+    if(s == 18){newedgesArray2 = walk18;newnodesArray2 = nodeswalk18}
+    if(s == 19){newedgesArray2 = walk19;newnodesArray2 = nodeswalk19}
+    if(s == 20){newedgesArray2 = walk20;newnodesArray2 = nodeswalk20}
+    if(s == 21){newedgesArray2 = walk21;newnodesArray2 = nodeswalk21}
+    if(s == 22){newedgesArray2 = walk22;newnodesArray2 = nodeswalk22}
+    if(s == 23){newedgesArray2 = walk23;newnodesArray2 = nodeswalk23}
+    if(s == 24){newedgesArray2 = walk24;newnodesArray2 = nodeswalk24}
+    if(s == 25){newedgesArray2 = walk25;newnodesArray2 = nodeswalk25}
+    if(s == 26){newedgesArray2 = walk26;newnodesArray2 = nodeswalk26}
+    if(s == 27){newedgesArray2 = walk27;newnodesArray2 = nodeswalk27}
+    if(s == 28){newedgesArray2 = walk28;newnodesArray2 = nodeswalk28}
+    if(s == 29){newedgesArray2 = walk29;newnodesArray2 = nodeswalk29}
+    if(s == 30){newedgesArray2 = walk30;newnodesArray2 = nodeswalk30}
+    if(s == 31){newedgesArray2 = walk31;newnodesArray2 = nodeswalk31}
+    if(s == 32){newedgesArray2 = walk32;newnodesArray2 = nodeswalk32}
+    if(s == 33){newedgesArray2 = walk33;newnodesArray2 = nodeswalk33}
+    if(s == 34){newedgesArray2 = walk34;newnodesArray2 = nodeswalk34}
+    if(s == 35){newedgesArray2 = walk35;newnodesArray2 = nodeswalk35}
+    if(s == 36){newedgesArray2 = walk36;newnodesArray2 = nodeswalk36}
+    if(s == 37){newedgesArray2 = walk37;newnodesArray2 = nodeswalk37}
+    if(s == 38){newedgesArray2 = walk38;newnodesArray2 = nodeswalk38}
+    if(s == 39){newedgesArray2 = walk39;newnodesArray2 = nodeswalk39}
+    if(s == 40){newedgesArray2 = walk40;newnodesArray2 = nodeswalk40}
+    if(s == 41){newedgesArray2 = walk41;newnodesArray2 = nodeswalk41}
+    if(s == 42){newedgesArray2 = walk42;newnodesArray2 = nodeswalk42}
+    if(s == 43){newedgesArray2 = walk43;newnodesArray2 = nodeswalk43}
+    if(s == 44){newedgesArray2 = walk44;newnodesArray2 = nodeswalk44}
+    if(s == 45){newedgesArray2 = walk45;newnodesArray2 = nodeswalk45}
+    if(s == 46){newedgesArray2 = walk46;newnodesArray2 = nodeswalk46}
+    if(s == 47){newedgesArray2 = walk47;newnodesArray2 = nodeswalk47}
+    if(s == 48){newedgesArray2 = walk48;newnodesArray2 = nodeswalk48}
+    if(s == 49){newedgesArray2 = walk49;newnodesArray2 = nodeswalk49}
+    if(s == 50){newedgesArray2 = walk50;newnodesArray2 = nodeswalk50}
+    if(s == 51){newedgesArray2 = walk51;newnodesArray2 = nodeswalk51}
+    if(s == 52){newedgesArray2 = walk52;newnodesArray2 = nodeswalk52}
+    if(s == 53){newedgesArray2 = walk53;newnodesArray2 = nodeswalk53}
+    if(s == 54){newedgesArray2 = walk54;newnodesArray2 = nodeswalk54}
+    if(s == 55){newedgesArray2 = walk55;newnodesArray2 = nodeswalk55}
+    if(s == 56){newedgesArray2 = walk56;newnodesArray2 = nodeswalk56}
+    if(s == 57){newedgesArray2 = walk57;newnodesArray2 = nodeswalk57}
+    if(s == 58){newedgesArray2 = walk58;newnodesArray2 = nodeswalk58}
+    if(s == 59){newedgesArray2 = walk59;newnodesArray2 = nodeswalk59}
+    if(s == 60){newedgesArray2 = walk60;newnodesArray2 = nodeswalk60}
+    if(s == 61){newedgesArray2 = walk61;newnodesArray2 = nodeswalk61}
+    if(s == 62){newedgesArray2 = walk62;newnodesArray2 = nodeswalk62}
+    if(s == 63){newedgesArray2 = walk63;newnodesArray2 = nodeswalk63}
+    if(s == 64){newedgesArray2 = walk64;newnodesArray2 = nodeswalk64}
+    if(s == 65){newedgesArray2 = walk65;newnodesArray2 = nodeswalk65}
+    if(s == 66){newedgesArray2 = walk66;newnodesArray2 = nodeswalk66}
+    if(s == 67){newedgesArray2 = walk67;newnodesArray2 = nodeswalk67}
+    if(s == 68){newedgesArray2 = walk68;newnodesArray2 = nodeswalk68}
+    if(s == 69){newedgesArray2 = walk69;newnodesArray2 = nodeswalk69}
+    if(s == 70){newedgesArray2 = walk70;newnodesArray2 = nodeswalk70}
+    if(s == 71){newedgesArray2 = walk71;newnodesArray2 = nodeswalk71}
+    if(s == 72){newedgesArray2 = walk72;newnodesArray2 = nodeswalk72}
+    if(s == 73){newedgesArray2 = walk73;newnodesArray2 = nodeswalk73}
+    if(s == 74){newedgesArray2 = walk74;newnodesArray2 = nodeswalk74}
+    if(s == 75){newedgesArray2 = walk75;newnodesArray2 = nodeswalk75}
+    if(s == 76){newedgesArray2 = walk76;newnodesArray2 = nodeswalk76}
+    if(s == 77){newedgesArray2 = walk77;newnodesArray2 = nodeswalk77}
+    if(s == 78){newedgesArray2 = walk78;newnodesArray2 = nodeswalk78}
+    if(s == 79){newedgesArray2 = walk79;newnodesArray2 = nodeswalk79}
+    if(s == 80){newedgesArray2 = walk80;newnodesArray2 = nodeswalk80}
+    if(s == 81){newedgesArray2 = walk81;newnodesArray2 = nodeswalk81}
+    if(s == 82){newedgesArray2 = walk82;newnodesArray2 = nodeswalk82}
+    if(s == 83){newedgesArray2 = walk83;newnodesArray2 = nodeswalk83}
+    if(s == 84){newedgesArray2 = walk84;newnodesArray2 = nodeswalk84}
+    if(s == 85){newedgesArray2 = walk85;newnodesArray2 = nodeswalk85}
+    if(s == 86){newedgesArray2 = walk86;newnodesArray2 = nodeswalk86}
+    if(s == 87){newedgesArray2 = walk87;newnodesArray2 = nodeswalk87}
+    if(s == 88){newedgesArray2 = walk88;newnodesArray2 = nodeswalk88}
+    if(s == 89){newedgesArray2 = walk89;newnodesArray2 = nodeswalk89}
+    if(s == 90){newedgesArray2 = walk90;newnodesArray2 = nodeswalk90}
+    if(s == 91){newedgesArray2 = walk91;newnodesArray2 = nodeswalk91}
+    if(s == 92){newedgesArray2 = walk92;newnodesArray2 = nodeswalk92}
+    if(s == 93){newedgesArray2 = walk93;newnodesArray2 = nodeswalk93}
+    if(s == 94){newedgesArray2 = walk94;newnodesArray2 = nodeswalk94}
+    if(s == 95){newedgesArray2 = walk95;newnodesArray2 = nodeswalk95}
+    if(s == 96){newedgesArray2 = walk96;newnodesArray2 = nodeswalk96}
+    if(s == 97){newedgesArray2 = walk97;newnodesArray2 = nodeswalk97}
+    if(s == 98){newedgesArray2 = walk98;newnodesArray2 = nodeswalk98}
+    if(s == 99){newedgesArray2 = walk99;newnodesArray2 = nodeswalk99}
+    if(s == 100){newedgesArray2 = walk100;newnodesArray2 = nodeswalk100}
+    if(s == 101){newedgesArray2 = walk101;newnodesArray2 = nodeswalk101}
+    if(s == 102){newedgesArray2 = walk102;newnodesArray2 = nodeswalk102}
+    if(s == 103){newedgesArray2 = walk103;newnodesArray2 = nodeswalk103}
+    if(s == 104){newedgesArray2 = walk104;newnodesArray2 = nodeswalk104}
+    if(s == 105){newedgesArray2 = walk105;newnodesArray2 = nodeswalk105}
+    if(s == 106){newedgesArray2 = walk106;newnodesArray2 = nodeswalk106}
+    if(s == 107){newedgesArray2 = walk107;newnodesArray2 = nodeswalk107}
+    if(s == 108){newedgesArray2 = walk108;newnodesArray2 = nodeswalk108}
+    if(s == 109){newedgesArray2 = walk109;newnodesArray2 = nodeswalk109}
+    if(s == 110){newedgesArray2 = walk110;newnodesArray2 = nodeswalk110}
+    if(s == 111){newedgesArray2 = walk111;newnodesArray2 = nodeswalk111}
+    if(s == 112){newedgesArray2 = walk112;newnodesArray2 = nodeswalk112}
+    if(s == 113){newedgesArray2 = walk113;newnodesArray2 = nodeswalk113}
+    if(s == 114){newedgesArray2 = walk114;newnodesArray2 = nodeswalk114}
+    if(s == 115){newedgesArray2 = walk115;newnodesArray2 = nodeswalk115}
+    if(s == 116){newedgesArray2 = walk116;newnodesArray2 = nodeswalk116}
+    if(s == 117){newedgesArray2 = walk117;newnodesArray2 = nodeswalk117}
+    if(s == 118){newedgesArray2 = walk118;newnodesArray2 = nodeswalk118}
+    if(s == 119){newedgesArray2 = walk119;newnodesArray2 = nodeswalk119}
+    if(s == 120){newedgesArray2 = walk120;newnodesArray2 = nodeswalk120}
+    if(s == 121){newedgesArray2 = walk121;newnodesArray2 = nodeswalk121}
+    if(s == 122){newedgesArray2 = walk122;newnodesArray2 = nodeswalk122}
+    if(s == 123){newedgesArray2 = walk123;newnodesArray2 = nodeswalk123}
+    if(s == 124){newedgesArray2 = walk124;newnodesArray2 = nodeswalk124}
+    if(s == 125){newedgesArray2 = walk125;newnodesArray2 = nodeswalk125}
+    if(s == 126){newedgesArray2 = walk126;newnodesArray2 = nodeswalk126}
+    if(s == 127){newedgesArray2 = walk127;newnodesArray2 = nodeswalk127}
+    if(s == 128){newedgesArray2 = walk128;newnodesArray2 = nodeswalk128}
+    if(s == 129){newedgesArray2 = walk129;newnodesArray2 = nodeswalk129}
+    if(s == 130){newedgesArray2 = walk130;newnodesArray2 = nodeswalk130}
+    if(s == 131){newedgesArray2 = walk131;newnodesArray2 = nodeswalk131}
+    if(s == 132){newedgesArray2 = walk132;newnodesArray2 = nodeswalk132}
+    if(s == 133){newedgesArray2 = walk133;newnodesArray2 = nodeswalk133}
+    if(s == 134){newedgesArray2 = walk134;newnodesArray2 = nodeswalk134}
+    if(s == 135){newedgesArray2 = walk135;newnodesArray2 = nodeswalk135}
+    if(s == 136){newedgesArray2 = walk136;newnodesArray2 = nodeswalk136}
+    if(s == 137){newedgesArray2 = walk137;newnodesArray2 = nodeswalk137}
+    if(s == 138){newedgesArray2 = walk138;newnodesArray2 = nodeswalk138}
+    if(s == 139){newedgesArray2 = walk139;newnodesArray2 = nodeswalk139}
+    if(s == 140){newedgesArray2 = walk140;newnodesArray2 = nodeswalk140}
+    if(s == 141){newedgesArray2 = walk141;newnodesArray2 = nodeswalk141}
+    if(s == 142){newedgesArray2 = walk142;newnodesArray2 = nodeswalk142}
+    if(s == 143){newedgesArray2 = walk143;newnodesArray2 = nodeswalk143}
+    if(s == 144){newedgesArray2 = walk144;newnodesArray2 = nodeswalk144}
+    if(s == 145){newedgesArray2 = walk145;newnodesArray2 = nodeswalk145}
+    if(s == 146){newedgesArray2 = walk146;newnodesArray2 = nodeswalk146}
+    if(s == 147){newedgesArray2 = walk147;newnodesArray2 = nodeswalk147}
+    if(s == 148){newedgesArray2 = walk148;newnodesArray2 = nodeswalk148}
+    if(s == 149){newedgesArray2 = walk149;newnodesArray2 = nodeswalk149}
+    if(s == 150){newedgesArray2 = walk150;newnodesArray2 = nodeswalk150}
+    if(s == 151){newedgesArray2 = walk151;newnodesArray2 = nodeswalk151}
+    if(s == 152){newedgesArray2 = walk152;newnodesArray2 = nodeswalk152}
+    if(s == 153){newedgesArray2 = walk153;newnodesArray2 = nodeswalk153}
+    if(s == 154){newedgesArray2 = walk154;newnodesArray2 = nodeswalk154}
+    if(s == 155){newedgesArray2 = walk155;newnodesArray2 = nodeswalk155}
+    if(s == 156){newedgesArray2 = walk156;newnodesArray2 = nodeswalk156}
+    if(s == 157){newedgesArray2 = walk157;newnodesArray2 = nodeswalk157}
+    if(s == 158){newedgesArray2 = walk158;newnodesArray2 = nodeswalk158}
+    if(s == 159){newedgesArray2 = walk159;newnodesArray2 = nodeswalk159}
+    if(s == 160){newedgesArray2 = walk160;newnodesArray2 = nodeswalk160}
+    if(s == 161){newedgesArray2 = walk161;newnodesArray2 = nodeswalk161}
+    if(s == 162){newedgesArray2 = walk162;newnodesArray2 = nodeswalk162}
+    if(s == 163){newedgesArray2 = walk163;newnodesArray2 = nodeswalk163}
+    if(s == 164){newedgesArray2 = walk164;newnodesArray2 = nodeswalk164}
+    if(s == 165){newedgesArray2 = walk165;newnodesArray2 = nodeswalk165}
+    if(s == 166){newedgesArray2 = walk166;newnodesArray2 = nodeswalk166}
+    if(s == 167){newedgesArray2 = walk167;newnodesArray2 = nodeswalk167}
+    if(s == 168){newedgesArray2 = walk168;newnodesArray2 = nodeswalk168}
+    if(s == 169){newedgesArray2 = walk169;newnodesArray2 = nodeswalk169}
+    if(s == 170){newedgesArray2 = walk170;newnodesArray2 = nodeswalk170}
+    if(s == 171){newedgesArray2 = walk171;newnodesArray2 = nodeswalk171}
+    if(s == 172){newedgesArray2 = walk172;newnodesArray2 = nodeswalk172}
+    if(s == 173){newedgesArray2 = walk173;newnodesArray2 = nodeswalk173}
+    if(s == 174){newedgesArray2 = walk174;newnodesArray2 = nodeswalk174}
+    if(s == 175){newedgesArray2 = walk175;newnodesArray2 = nodeswalk175}
+    if(s == 176){newedgesArray2 = walk176;newnodesArray2 = nodeswalk176}
+    if(s == 177){newedgesArray2 = walk177;newnodesArray2 = nodeswalk177}
+    if(s == 178){newedgesArray2 = walk178;newnodesArray2 = nodeswalk178}
+    if(s == 179){newedgesArray2 = walk179;newnodesArray2 = nodeswalk179}
+    if(s == 180){newedgesArray2 = walk180;newnodesArray2 = nodeswalk180}
+    if(s == 181){newedgesArray2 = walk181;newnodesArray2 = nodeswalk181}
+    if(s == 182){newedgesArray2 = walk182;newnodesArray2 = nodeswalk182}
+    if(s == 183){newedgesArray2 = walk183;newnodesArray2 = nodeswalk183}
+    if(s == 184){newedgesArray2 = walk184;newnodesArray2 = nodeswalk184}
+    if(s == 185){newedgesArray2 = walk185;newnodesArray2 = nodeswalk185}
+    if(s == 186){newedgesArray2 = walk186;newnodesArray2 = nodeswalk186}
+    if(s == 187){newedgesArray2 = walk187;newnodesArray2 = nodeswalk187}
+    if(s == 188){newedgesArray2 = walk188;newnodesArray2 = nodeswalk188}
+    if(s == 189){newedgesArray2 = walk189;newnodesArray2 = nodeswalk189}
+    if(s == 190){newedgesArray2 = walk190;newnodesArray2 = nodeswalk190}
+    if(s == 191){newedgesArray2 = walk191;newnodesArray2 = nodeswalk191}
+    if(s == 192){newedgesArray2 = walk192;newnodesArray2 = nodeswalk192}
+    if(s == 193){newedgesArray2 = walk193;newnodesArray2 = nodeswalk193}
+    if(s == 194){newedgesArray2 = walk194;newnodesArray2 = nodeswalk194}
+    if(s == 195){newedgesArray2 = walk195;newnodesArray2 = nodeswalk195}
+    if(s == 196){newedgesArray2 = walk196;newnodesArray2 = nodeswalk196}
+    if(s == 197){newedgesArray2 = walk197;newnodesArray2 = nodeswalk197}
+    if(s == 198){newedgesArray2 = walk198;newnodesArray2 = nodeswalk198}
+    if(s == 199){newedgesArray2 = walk199;newnodesArray2 = nodeswalk199}
+    if(s == 200){newedgesArray2 = walk200;newnodesArray2 = nodeswalk200}
+    if(s == 201){newedgesArray2 = walk201;newnodesArray2 = nodeswalk201}
+    if(s == 202){newedgesArray2 = walk202;newnodesArray2 = nodeswalk202}
+    if(s == 203){newedgesArray2 = walk203;newnodesArray2 = nodeswalk203}
+    if(s == 204){newedgesArray2 = walk204;newnodesArray2 = nodeswalk204}
+    if(s == 205){newedgesArray2 = walk205;newnodesArray2 = nodeswalk205}
+    if(s == 206){newedgesArray2 = walk206;newnodesArray2 = nodeswalk206}
+    if(s == 207){newedgesArray2 = walk207;newnodesArray2 = nodeswalk207}
+    if(s == 208){newedgesArray2 = walk208;newnodesArray2 = nodeswalk208}
+    if(s == 209){newedgesArray2 = walk209;newnodesArray2 = nodeswalk209}
+    if(s == 210){newedgesArray2 = walk210;newnodesArray2 = nodeswalk210}
+    if(s == 211){newedgesArray2 = walk211;newnodesArray2 = nodeswalk211}
+    if(s == 212){newedgesArray2 = walk212;newnodesArray2 = nodeswalk212}
+    if(s == 213){newedgesArray2 = walk213;newnodesArray2 = nodeswalk213}
+    if(s == 214){newedgesArray2 = walk214;newnodesArray2 = nodeswalk214}
+    if(s == 215){newedgesArray2 = walk215;newnodesArray2 = nodeswalk215}
+    if(s == 216){newedgesArray2 = walk216;newnodesArray2 = nodeswalk216}
+    if(s == 217){newedgesArray2 = walk217;newnodesArray2 = nodeswalk217}
+    if(s == 218){newedgesArray2 = walk218;newnodesArray2 = nodeswalk218}
+    if(s == 219){newedgesArray2 = walk219;newnodesArray2 = nodeswalk219}
+    if(s == 220){newedgesArray2 = walk220;newnodesArray2 = nodeswalk220}
+    if(s == 221){newedgesArray2 = walk221;newnodesArray2 = nodeswalk221}
+    if(s == 222){newedgesArray2 = walk222;newnodesArray2 = nodeswalk222}
+    if(s == 223){newedgesArray2 = walk223;newnodesArray2 = nodeswalk223}
+    if(s == 224){newedgesArray2 = walk224;newnodesArray2 = nodeswalk224}
+    if(s == 225){newedgesArray2 = walk225;newnodesArray2 = nodeswalk225}
+    if(s == 226){newedgesArray2 = walk226;newnodesArray2 = nodeswalk226}
+    if(s == 227){newedgesArray2 = walk227;newnodesArray2 = nodeswalk227}
+    if(s == 228){newedgesArray2 = walk228;newnodesArray2 = nodeswalk228}
+    if(s == 229){newedgesArray2 = walk229;newnodesArray2 = nodeswalk229}
+    if(s == 230){newedgesArray2 = walk230;newnodesArray2 = nodeswalk230}
+    if(s == 231){newedgesArray2 = walk231;newnodesArray2 = nodeswalk231}
+    if(s == 232){newedgesArray2 = walk232;newnodesArray2 = nodeswalk232}
+    if(s == 233){newedgesArray2 = walk233;newnodesArray2 = nodeswalk233}
+    if(s == 234){newedgesArray2 = walk234;newnodesArray2 = nodeswalk234}
+    if(s == 235){newedgesArray2 = walk235;newnodesArray2 = nodeswalk235}
+    if(s == 236){newedgesArray2 = walk236;newnodesArray2 = nodeswalk236}
+    if(s == 237){newedgesArray2 = walk237;newnodesArray2 = nodeswalk237}
+    if(s == 238){newedgesArray2 = walk238;newnodesArray2 = nodeswalk238}
+    if(s == 239){newedgesArray2 = walk239;newnodesArray2 = nodeswalk239}
+    if(s == 240){newedgesArray2 = walk240;newnodesArray2 = nodeswalk240}
+    if(s == 241){newedgesArray2 = walk241;newnodesArray2 = nodeswalk241}
+    if(s == 242){newedgesArray2 = walk242;newnodesArray2 = nodeswalk242}
+    if(s == 243){newedgesArray2 = walk243;newnodesArray2 = nodeswalk243}
+    if(s == 244){newedgesArray2 = walk244;newnodesArray2 = nodeswalk244}
+    if(s == 245){newedgesArray2 = walk245;newnodesArray2 = nodeswalk245}
+    if(s == 246){newedgesArray2 = walk246;newnodesArray2 = nodeswalk246}
+    if(s == 247){newedgesArray2 = walk247;newnodesArray2 = nodeswalk247}
+    if(s == 248){newedgesArray2 = walk248;newnodesArray2 = nodeswalk248}
+    if(s == 249){newedgesArray2 = walk249;newnodesArray2 = nodeswalk249}
+    if(s == 250){newedgesArray2 = walk250;newnodesArray2 = nodeswalk250}
+    if(s == 251){newedgesArray2 = walk251;newnodesArray2 = nodeswalk251}
+    if(s == 252){newedgesArray2 = walk252;newnodesArray2 = nodeswalk252}
+    if(s == 253){newedgesArray2 = walk253;newnodesArray2 = nodeswalk253}
+    if(s == 254){newedgesArray2 = walk254;newnodesArray2 = nodeswalk254}
+    if(s == 255){newedgesArray2 = walk255;newnodesArray2 = nodeswalk255}
+    if(s == 256){newedgesArray2 = walk256;newnodesArray2 = nodeswalk256}
+    if(s == 257){newedgesArray2 = walk257;newnodesArray2 = nodeswalk257}
+    if(s == 258){newedgesArray2 = walk258;newnodesArray2 = nodeswalk258}
+    if(s == 259){newedgesArray2 = walk259;newnodesArray2 = nodeswalk259}
+    if(s == 260){newedgesArray2 = walk260;newnodesArray2 = nodeswalk260}
+    if(s == 261){newedgesArray2 = walk261;newnodesArray2 = nodeswalk261}
+    if(s == 262){newedgesArray2 = walk262;newnodesArray2 = nodeswalk262}
+    if(s == 263){newedgesArray2 = walk263;newnodesArray2 = nodeswalk263}
+    if(s == 264){newedgesArray2 = walk264;newnodesArray2 = nodeswalk264}
+    if(s == 265){newedgesArray2 = walk265;newnodesArray2 = nodeswalk265}
+    if(s == 266){newedgesArray2 = walk266;newnodesArray2 = nodeswalk266}
+    if(s == 267){newedgesArray2 = walk267;newnodesArray2 = nodeswalk267}
+    if(s == 268){newedgesArray2 = walk268;newnodesArray2 = nodeswalk268}
+    if(s == 269){newedgesArray2 = walk269;newnodesArray2 = nodeswalk269}
+    if(s == 270){newedgesArray2 = walk270;newnodesArray2 = nodeswalk270}
+    if(s == 271){newedgesArray2 = walk271;newnodesArray2 = nodeswalk271}
+    if(s == 272){newedgesArray2 = walk272;newnodesArray2 = nodeswalk272}
+    if(s == 273){newedgesArray2 = walk273;newnodesArray2 = nodeswalk273}
+    if(s == 274){newedgesArray2 = walk274;newnodesArray2 = nodeswalk274}
+    if(s == 275){newedgesArray2 = walk275;newnodesArray2 = nodeswalk275}
+    if(s == 276){newedgesArray2 = walk276;newnodesArray2 = nodeswalk276}
+    if(s == 277){newedgesArray2 = walk277;newnodesArray2 = nodeswalk277}
+    if(s == 278){newedgesArray2 = walk278;newnodesArray2 = nodeswalk278}
+    if(s == 279){newedgesArray2 = walk279;newnodesArray2 = nodeswalk279}
+    if(s == 280){newedgesArray2 = walk280;newnodesArray2 = nodeswalk280}
+    if(s == 281){newedgesArray2 = walk281;newnodesArray2 = nodeswalk281}
+    if(s == 282){newedgesArray2 = walk282;newnodesArray2 = nodeswalk282}
+    if(s == 283){newedgesArray2 = walk283;newnodesArray2 = nodeswalk283}
+    if(s == 284){newedgesArray2 = walk284;newnodesArray2 = nodeswalk284}
+    if(s == 285){newedgesArray2 = walk285;newnodesArray2 = nodeswalk285}
+    if(s == 286){newedgesArray2 = walk286;newnodesArray2 = nodeswalk286}
+    if(s == 287){newedgesArray2 = walk287;newnodesArray2 = nodeswalk287}
+    if(s == 288){newedgesArray2 = walk288;newnodesArray2 = nodeswalk288}
+    if(s == 289){newedgesArray2 = walk289;newnodesArray2 = nodeswalk289}
+    if(s == 290){newedgesArray2 = walk290;newnodesArray2 = nodeswalk290}
+    if(s == 291){newedgesArray2 = walk291;newnodesArray2 = nodeswalk291}
+    if(s == 292){newedgesArray2 = walk292;newnodesArray2 = nodeswalk292}
+    if(s == 293){newedgesArray2 = walk293;newnodesArray2 = nodeswalk293}
+    if(s == 294){newedgesArray2 = walk294;newnodesArray2 = nodeswalk294}
+    if(s == 295){newedgesArray2 = walk295;newnodesArray2 = nodeswalk295}
+    if(s == 296){newedgesArray2 = walk296;newnodesArray2 = nodeswalk296}
+    if(s == 297){newedgesArray2 = walk297;newnodesArray2 = nodeswalk297}
+    if(s == 298){newedgesArray2 = walk298;newnodesArray2 = nodeswalk298}
+    if(s == 299){newedgesArray2 = walk299;newnodesArray2 = nodeswalk299}
+    if(s == 300){newedgesArray2 = walk300;newnodesArray2 = nodeswalk300}
+    if(s == 301){newedgesArray2 = walk301;newnodesArray2 = nodeswalk301}
+    if(s == 302){newedgesArray2 = walk302;newnodesArray2 = nodeswalk302}
+    if(s == 303){newedgesArray2 = walk303;newnodesArray2 = nodeswalk303}
+    if(s == 304){newedgesArray2 = walk304;newnodesArray2 = nodeswalk304}
+    if(s == 305){newedgesArray2 = walk305;newnodesArray2 = nodeswalk305}
+    if(s == 306){newedgesArray2 = walk306;newnodesArray2 = nodeswalk306}
+    if(s == 307){newedgesArray2 = walk307;newnodesArray2 = nodeswalk307}
+    if(s == 308){newedgesArray2 = walk308;newnodesArray2 = nodeswalk308}
+    if(s == 309){newedgesArray2 = walk309;newnodesArray2 = nodeswalk309}
+    if(s == 310){newedgesArray2 = walk310;newnodesArray2 = nodeswalk310}
+    if(s == 311){newedgesArray2 = walk311;newnodesArray2 = nodeswalk311}
+    if(s == 312){newedgesArray2 = walk312;newnodesArray2 = nodeswalk312}
+    if(s == 313){newedgesArray2 = walk313;newnodesArray2 = nodeswalk313}
+    if(s == 314){newedgesArray2 = walk314;newnodesArray2 = nodeswalk314}
+    if(s == 315){newedgesArray2 = walk315;newnodesArray2 = nodeswalk315}
+    if(s == 316){newedgesArray2 = walk316;newnodesArray2 = nodeswalk316}
+    if(s == 317){newedgesArray2 = walk317;newnodesArray2 = nodeswalk317}
+    if(s == 318){newedgesArray2 = walk318;newnodesArray2 = nodeswalk318}
+    if(s == 319){newedgesArray2 = walk319;newnodesArray2 = nodeswalk319}
+    if(s == 320){newedgesArray2 = walk320;newnodesArray2 = nodeswalk320}
+    if(s == 321){newedgesArray2 = walk321;newnodesArray2 = nodeswalk321}
+    if(s == 322){newedgesArray2 = walk322;newnodesArray2 = nodeswalk322}
+    if(s == 323){newedgesArray2 = walk323;newnodesArray2 = nodeswalk323}
+    if(s == 324){newedgesArray2 = walk324;newnodesArray2 = nodeswalk324}
+    if(s == 325){newedgesArray2 = walk325;newnodesArray2 = nodeswalk325}
+    if(s == 326){newedgesArray2 = walk326;newnodesArray2 = nodeswalk326}
+    if(s == 327){newedgesArray2 = walk327;newnodesArray2 = nodeswalk327}
+    if(s == 328){newedgesArray2 = walk328;newnodesArray2 = nodeswalk328}
+    if(s == 329){newedgesArray2 = walk329;newnodesArray2 = nodeswalk329}
+    if(s == 330){newedgesArray2 = walk330;newnodesArray2 = nodeswalk330}
+    if(s == 331){newedgesArray2 = walk331;newnodesArray2 = nodeswalk331}
+    if(s == 332){newedgesArray2 = walk332;newnodesArray2 = nodeswalk332}
+    if(s == 333){newedgesArray2 = walk333;newnodesArray2 = nodeswalk333}
+    if(s == 334){newedgesArray2 = walk334;newnodesArray2 = nodeswalk334}
+    if(s == 335){newedgesArray2 = walk335;newnodesArray2 = nodeswalk335}
+    if(s == 336){newedgesArray2 = walk336;newnodesArray2 = nodeswalk336}
+    if(s == 337){newedgesArray2 = walk337;newnodesArray2 = nodeswalk337}
+    if(s == 338){newedgesArray2 = walk338;newnodesArray2 = nodeswalk338}
+    if(s == 339){newedgesArray2 = walk339;newnodesArray2 = nodeswalk339}
+    if(s == 340){newedgesArray2 = walk340;newnodesArray2 = nodeswalk340}
+    if(s == 341){newedgesArray2 = walk341;newnodesArray2 = nodeswalk341}
+    if(s == 342){newedgesArray2 = walk342;newnodesArray2 = nodeswalk342}
+    if(s == 343){newedgesArray2 = walk343;newnodesArray2 = nodeswalk343}
+    if(s == 344){newedgesArray2 = walk344;newnodesArray2 = nodeswalk344}
+    if(s == 345){newedgesArray2 = walk345;newnodesArray2 = nodeswalk345}
+    if(s == 346){newedgesArray2 = walk346;newnodesArray2 = nodeswalk346}
+    if(s == 347){newedgesArray2 = walk347;newnodesArray2 = nodeswalk347}
+    if(s == 348){newedgesArray2 = walk348;newnodesArray2 = nodeswalk348}
+    if(s == 349){newedgesArray2 = walk349;newnodesArray2 = nodeswalk349}
+    if(s == 350){newedgesArray2 = walk350;newnodesArray2 = nodeswalk350}
+    if(s == 351){newedgesArray2 = walk351;newnodesArray2 = nodeswalk351}
+    if(s == 352){newedgesArray2 = walk352;newnodesArray2 = nodeswalk352}
+    if(s == 353){newedgesArray2 = walk353;newnodesArray2 = nodeswalk353}
+    if(s == 354){newedgesArray2 = walk354;newnodesArray2 = nodeswalk354}
+    if(s == 355){newedgesArray2 = walk355;newnodesArray2 = nodeswalk355}
+    if(s == 356){newedgesArray2 = walk356;newnodesArray2 = nodeswalk356}
+    if(s == 357){newedgesArray2 = walk357;newnodesArray2 = nodeswalk357}
+    if(s == 358){newedgesArray2 = walk358;newnodesArray2 = nodeswalk358}
+    if(s == 359){newedgesArray2 = walk359;newnodesArray2 = nodeswalk359}
+    if(s == 360){newedgesArray2 = walk360;newnodesArray2 = nodeswalk360}
+    if(s == 361){newedgesArray2 = walk361;newnodesArray2 = nodeswalk361}
+    if(s == 362){newedgesArray2 = walk362;newnodesArray2 = nodeswalk362}
+    if(s == 363){newedgesArray2 = walk363;newnodesArray2 = nodeswalk363}
+    if(s == 364){newedgesArray2 = walk364;newnodesArray2 = nodeswalk364}
+    if(s == 365){newedgesArray2 = walk365;newnodesArray2 = nodeswalk365}
+    if(s == 366){newedgesArray2 = walk366;newnodesArray2 = nodeswalk366}
+    if(s == 367){newedgesArray2 = walk367;newnodesArray2 = nodeswalk367}
+    if(s == 368){newedgesArray2 = walk368;newnodesArray2 = nodeswalk368}
+    if(s == 369){newedgesArray2 = walk369;newnodesArray2 = nodeswalk369}
+    if(s == 370){newedgesArray2 = walk370;newnodesArray2 = nodeswalk370}
+    if(s == 371){newedgesArray2 = walk371;newnodesArray2 = nodeswalk371}
+    if(s == 372){newedgesArray2 = walk372;newnodesArray2 = nodeswalk372}
+    if(s == 373){newedgesArray2 = walk373;newnodesArray2 = nodeswalk373}
+    if(s == 374){newedgesArray2 = walk374;newnodesArray2 = nodeswalk374}
+    if(s == 375){newedgesArray2 = walk375;newnodesArray2 = nodeswalk375}
+    if(s == 376){newedgesArray2 = walk376;newnodesArray2 = nodeswalk376}
+    if(s == 377){newedgesArray2 = walk377;newnodesArray2 = nodeswalk377}
+    if(s == 378){newedgesArray2 = walk378;newnodesArray2 = nodeswalk378}
+    if(s == 379){newedgesArray2 = walk379;newnodesArray2 = nodeswalk379}
+    if(s == 380){newedgesArray2 = walk380;newnodesArray2 = nodeswalk380}
+    if(s == 381){newedgesArray2 = walk381;newnodesArray2 = nodeswalk381}
+    if(s == 382){newedgesArray2 = walk382;newnodesArray2 = nodeswalk382}
+    if(s == 383){newedgesArray2 = walk383;newnodesArray2 = nodeswalk383}
+    if(s == 384){newedgesArray2 = walk384;newnodesArray2 = nodeswalk384}
+    if(s == 385){newedgesArray2 = walk385;newnodesArray2 = nodeswalk385}
+    if(s == 386){newedgesArray2 = walk386;newnodesArray2 = nodeswalk386}
+    if(s == 387){newedgesArray2 = walk387;newnodesArray2 = nodeswalk387}
+    if(s == 388){newedgesArray2 = walk388;newnodesArray2 = nodeswalk388}
+    if(s == 389){newedgesArray2 = walk389;newnodesArray2 = nodeswalk389}
+    if(s == 390){newedgesArray2 = walk390;newnodesArray2 = nodeswalk390}
+    if(s == 391){newedgesArray2 = walk391;newnodesArray2 = nodeswalk391}
+    if(s == 392){newedgesArray2 = walk392;newnodesArray2 = nodeswalk392}
+    if(s == 393){newedgesArray2 = walk393;newnodesArray2 = nodeswalk393}
+    if(s == 394){newedgesArray2 = walk394;newnodesArray2 = nodeswalk394}
+    if(s == 395){newedgesArray2 = walk395;newnodesArray2 = nodeswalk395}
+    if(s == 396){newedgesArray2 = walk396;newnodesArray2 = nodeswalk396}
+    if(s == 397){newedgesArray2 = walk397;newnodesArray2 = nodeswalk397}
+    if(s == 398){newedgesArray2 = walk398;newnodesArray2 = nodeswalk398}
+    if(s == 399){newedgesArray2 = walk399;newnodesArray2 = nodeswalk399}
+    if(s == 400){newedgesArray2 = walk400;newnodesArray2 = nodeswalk400}
+    if(s == 401){newedgesArray2 = walk401;newnodesArray2 = nodeswalk401}
+    if(s == 402){newedgesArray2 = walk402;newnodesArray2 = nodeswalk402}
+    if(s == 403){newedgesArray2 = walk403;newnodesArray2 = nodeswalk403}
+    if(s == 404){newedgesArray2 = walk404;newnodesArray2 = nodeswalk404}
+    if(s == 405){newedgesArray2 = walk405;newnodesArray2 = nodeswalk405}
+    if(s == 406){newedgesArray2 = walk406;newnodesArray2 = nodeswalk406}
+    if(s == 407){newedgesArray2 = walk407;newnodesArray2 = nodeswalk407}
+    if(s == 408){newedgesArray2 = walk408;newnodesArray2 = nodeswalk408}
+    if(s == 409){newedgesArray2 = walk409;newnodesArray2 = nodeswalk409}
+    if(s == 410){newedgesArray2 = walk410;newnodesArray2 = nodeswalk410}
+    if(s == 411){newedgesArray2 = walk411;newnodesArray2 = nodeswalk411}
+    if(s == 412){newedgesArray2 = walk412;newnodesArray2 = nodeswalk412}
+    if(s == 413){newedgesArray2 = walk413;newnodesArray2 = nodeswalk413}
+    if(s == 414){newedgesArray2 = walk414;newnodesArray2 = nodeswalk414}
+    if(s == 415){newedgesArray2 = walk415;newnodesArray2 = nodeswalk415}
+    if(s == 416){newedgesArray2 = walk416;newnodesArray2 = nodeswalk416}
+    if(s == 417){newedgesArray2 = walk417;newnodesArray2 = nodeswalk417}
+    if(s == 418){newedgesArray2 = walk418;newnodesArray2 = nodeswalk418}
+    if(s == 419){newedgesArray2 = walk419;newnodesArray2 = nodeswalk419}
+    if(s == 420){newedgesArray2 = walk420;newnodesArray2 = nodeswalk420}
+    if(s == 421){newedgesArray2 = walk421;newnodesArray2 = nodeswalk421}
+    if(s == 422){newedgesArray2 = walk422;newnodesArray2 = nodeswalk422}
+    if(s == 423){newedgesArray2 = walk423;newnodesArray2 = nodeswalk423}
+    if(s == 424){newedgesArray2 = walk424;newnodesArray2 = nodeswalk424}
+    if(s == 425){newedgesArray2 = walk425;newnodesArray2 = nodeswalk425}
+    if(s == 426){newedgesArray2 = walk426;newnodesArray2 = nodeswalk426}
+    if(s == 427){newedgesArray2 = walk427;newnodesArray2 = nodeswalk427}
+    if(s == 428){newedgesArray2 = walk428;newnodesArray2 = nodeswalk428}
+    if(s == 429){newedgesArray2 = walk429;newnodesArray2 = nodeswalk429}
+    if(s == 430){newedgesArray2 = walk430;newnodesArray2 = nodeswalk430}
+    if(s == 431){newedgesArray2 = walk431;newnodesArray2 = nodeswalk431}
+    if(s == 432){newedgesArray2 = walk432;newnodesArray2 = nodeswalk432}
+    if(s == 433){newedgesArray2 = walk433;newnodesArray2 = nodeswalk433}
+    if(s == 434){newedgesArray2 = walk434;newnodesArray2 = nodeswalk434}
+    if(s == 435){newedgesArray2 = walk435;newnodesArray2 = nodeswalk435}
+    if(s == 436){newedgesArray2 = walk436;newnodesArray2 = nodeswalk436}
+    if(s == 437){newedgesArray2 = walk437;newnodesArray2 = nodeswalk437}
+    if(s == 438){newedgesArray2 = walk438;newnodesArray2 = nodeswalk438}
+    if(s == 439){newedgesArray2 = walk439;newnodesArray2 = nodeswalk439}
+    if(s == 440){newedgesArray2 = walk440;newnodesArray2 = nodeswalk440}
+    if(s == 441){newedgesArray2 = walk441;newnodesArray2 = nodeswalk441}
+    if(s == 442){newedgesArray2 = walk442;newnodesArray2 = nodeswalk442}
+    if(s == 443){newedgesArray2 = walk443;newnodesArray2 = nodeswalk443}
+    if(s == 444){newedgesArray2 = walk444;newnodesArray2 = nodeswalk444}
+    if(s == 445){newedgesArray2 = walk445;newnodesArray2 = nodeswalk445}
+    if(s == 446){newedgesArray2 = walk446;newnodesArray2 = nodeswalk446}
+    if(s == 447){newedgesArray2 = walk447;newnodesArray2 = nodeswalk447}
+    if(s == 448){newedgesArray2 = walk448;newnodesArray2 = nodeswalk448}
+    if(s == 449){newedgesArray2 = walk449;newnodesArray2 = nodeswalk449}
+    if(s == 450){newedgesArray2 = walk450;newnodesArray2 = nodeswalk450}
+    if(s == 451){newedgesArray2 = walk451;newnodesArray2 = nodeswalk451}
+    if(s == 452){newedgesArray2 = walk452;newnodesArray2 = nodeswalk452}
+    if(s == 453){newedgesArray2 = walk453;newnodesArray2 = nodeswalk453}
+    if(s == 454){newedgesArray2 = walk454;newnodesArray2 = nodeswalk454}
+    if(s == 455){newedgesArray2 = walk455;newnodesArray2 = nodeswalk455}
+    if(s == 456){newedgesArray2 = walk456;newnodesArray2 = nodeswalk456}
+    if(s == 457){newedgesArray2 = walk457;newnodesArray2 = nodeswalk457}
+    if(s == 458){newedgesArray2 = walk458;newnodesArray2 = nodeswalk458}
+    if(s == 459){newedgesArray2 = walk459;newnodesArray2 = nodeswalk459}
+    if(s == 460){newedgesArray2 = walk460;newnodesArray2 = nodeswalk460}
+    if(s == 461){newedgesArray2 = walk461;newnodesArray2 = nodeswalk461}
+    if(s == 462){newedgesArray2 = walk462;newnodesArray2 = nodeswalk462}
+    if(s == 463){newedgesArray2 = walk463;newnodesArray2 = nodeswalk463}
+    if(s == 464){newedgesArray2 = walk464;newnodesArray2 = nodeswalk464}
+    if(s == 465){newedgesArray2 = walk465;newnodesArray2 = nodeswalk465}
+    if(s == 466){newedgesArray2 = walk466;newnodesArray2 = nodeswalk466}
+    if(s == 467){newedgesArray2 = walk467;newnodesArray2 = nodeswalk467}
+    if(s == 468){newedgesArray2 = walk468;newnodesArray2 = nodeswalk468}
+    if(s == 469){newedgesArray2 = walk469;newnodesArray2 = nodeswalk469}
+    if(s == 470){newedgesArray2 = walk470;newnodesArray2 = nodeswalk470}
+    if(s == 471){newedgesArray2 = walk471;newnodesArray2 = nodeswalk471}
+    if(s == 472){newedgesArray2 = walk472;newnodesArray2 = nodeswalk472}
+    if(s == 473){newedgesArray2 = walk473;newnodesArray2 = nodeswalk473}
+    if(s == 474){newedgesArray2 = walk474;newnodesArray2 = nodeswalk474}
+    if(s == 475){newedgesArray2 = walk475;newnodesArray2 = nodeswalk475}
+    if(s == 476){newedgesArray2 = walk476;newnodesArray2 = nodeswalk476}
+    if(s == 477){newedgesArray2 = walk477;newnodesArray2 = nodeswalk477}
+    if(s == 478){newedgesArray2 = walk478;newnodesArray2 = nodeswalk478}
+    if(s == 479){newedgesArray2 = walk479;newnodesArray2 = nodeswalk479}
+    if(s == 480){newedgesArray2 = walk480;newnodesArray2 = nodeswalk480}
+    if(s == 481){newedgesArray2 = walk481;newnodesArray2 = nodeswalk481}
+    if(s == 482){newedgesArray2 = walk482;newnodesArray2 = nodeswalk482}
+    if(s == 483){newedgesArray2 = walk483;newnodesArray2 = nodeswalk483}
+    if(s == 484){newedgesArray2 = walk484;newnodesArray2 = nodeswalk484}
+    if(s == 485){newedgesArray2 = walk485;newnodesArray2 = nodeswalk485}
+    if(s == 486){newedgesArray2 = walk486;newnodesArray2 = nodeswalk486}
+    if(s == 487){newedgesArray2 = walk487;newnodesArray2 = nodeswalk487}
+    if(s == 488){newedgesArray2 = walk488;newnodesArray2 = nodeswalk488}
+    if(s == 489){newedgesArray2 = walk489;newnodesArray2 = nodeswalk489}
+    if(s == 490){newedgesArray2 = walk490;newnodesArray2 = nodeswalk490}
+    if(s == 491){newedgesArray2 = walk491;newnodesArray2 = nodeswalk491}
+    if(s == 492){newedgesArray2 = walk492;newnodesArray2 = nodeswalk492}
+    if(s == 493){newedgesArray2 = walk493;newnodesArray2 = nodeswalk493}
+    if(s == 494){newedgesArray2 = walk494;newnodesArray2 = nodeswalk494}
+    if(s == 495){newedgesArray2 = walk495;newnodesArray2 = nodeswalk495}
+    if(s == 496){newedgesArray2 = walk496;newnodesArray2 = nodeswalk496}
+    if(s == 497){newedgesArray2 = walk497;newnodesArray2 = nodeswalk497}
+    if(s == 498){newedgesArray2 = walk498;newnodesArray2 = nodeswalk498}
+    if(s == 499){newedgesArray2 = walk499;newnodesArray2 = nodeswalk499}
+    nodes.add(newnodesArray2)
+    edges.add(newedgesArray2);
+
+    var result = newnodesArray2.map(a => a.id);
+console.log(result);
+var keys = []
+for(i = 0; i<result.length; i++){
+    for(var key in dict) {
+    if(dict[key] == result[i]) {
+        console.log(key);
+        key = key.split("/");
+        key.shift();
+        key.shift();
+        key.pop();
+        var newkey = key.join("/");
+        newkey = "/html[1]/body[1]/div[1]/div[1]/div[1]/"+newkey;
+        keys.push(newkey)
+        // console.log(newkey);
+    }
+}
+}
+console.log(keys);
+
+for(i=0; i<keys.length; i++){
+    elem[i] = getElementByXpath(keys[i]);
+    elem[i].style.backgroundColor = "#FDFF47";
+}
+console.log(elem);
+
+    }
+
+    function resetAllNodes(id) {
+    	// alert(id);
+    	var s = id;
+
+        nodes.clear();
+        edges.clear();
+        // nodes.add(nodesArray);
+
+if(s == 0){newedgesArray = edgesArray0;newnodesArray = nodesArray0}
+    if(s == 1){newedgesArray = edgesArray1;newnodesArray = nodesArray1}
+    if(s == 2){newedgesArray = edgesArray2;newnodesArray = nodesArray2}
+    if(s == 3){newedgesArray = edgesArray3;newnodesArray = nodesArray3}
+    if(s == 4){newedgesArray = edgesArray4;newnodesArray = nodesArray4}
+    if(s == 5){newedgesArray = edgesArray5;newnodesArray = nodesArray5}
+    if(s == 6){newedgesArray = edgesArray6;newnodesArray = nodesArray6}
+    if(s == 7){newedgesArray = edgesArray7;newnodesArray = nodesArray7}
+    if(s == 8){newedgesArray = edgesArray8;newnodesArray = nodesArray8}
+    if(s == 9){newedgesArray = edgesArray9;newnodesArray = nodesArray9}
+    if(s == 10){newedgesArray = edgesArray10;newnodesArray = nodesArray10}
+    if(s == 11){newedgesArray = edgesArray11;newnodesArray = nodesArray11}
+    if(s == 12){newedgesArray = edgesArray12;newnodesArray = nodesArray12}
+    if(s == 13){newedgesArray = edgesArray13;newnodesArray = nodesArray13}
+    if(s == 14){newedgesArray = edgesArray14;newnodesArray = nodesArray14}
+    if(s == 15){newedgesArray = edgesArray15;newnodesArray = nodesArray15}
+    if(s == 16){newedgesArray = edgesArray16;newnodesArray = nodesArray16}
+    if(s == 17){newedgesArray = edgesArray17;newnodesArray = nodesArray17}
+    if(s == 18){newedgesArray = edgesArray18;newnodesArray = nodesArray18}
+    if(s == 19){newedgesArray = edgesArray19;newnodesArray = nodesArray19}
+    if(s == 20){newedgesArray = edgesArray20;newnodesArray = nodesArray20}
+    if(s == 21){newedgesArray = edgesArray21;newnodesArray = nodesArray21}
+    if(s == 22){newedgesArray = edgesArray22;newnodesArray = nodesArray22}
+    if(s == 23){newedgesArray = edgesArray23;newnodesArray = nodesArray23}
+    if(s == 24){newedgesArray = edgesArray24;newnodesArray = nodesArray24}
+    if(s == 25){newedgesArray = edgesArray25;newnodesArray = nodesArray25}
+    if(s == 26){newedgesArray = edgesArray26;newnodesArray = nodesArray26}
+    if(s == 27){newedgesArray = edgesArray27;newnodesArray = nodesArray27}
+    if(s == 28){newedgesArray = edgesArray28;newnodesArray = nodesArray28}
+    if(s == 29){newedgesArray = edgesArray29;newnodesArray = nodesArray29}
+    if(s == 30){newedgesArray = edgesArray30;newnodesArray = nodesArray30}
+    if(s == 31){newedgesArray = edgesArray31;newnodesArray = nodesArray31}
+    if(s == 32){newedgesArray = edgesArray32;newnodesArray = nodesArray32}
+    if(s == 33){newedgesArray = edgesArray33;newnodesArray = nodesArray33}
+    if(s == 34){newedgesArray = edgesArray34;newnodesArray = nodesArray34}
+    if(s == 35){newedgesArray = edgesArray35;newnodesArray = nodesArray35}
+    if(s == 36){newedgesArray = edgesArray36;newnodesArray = nodesArray36}
+    if(s == 37){newedgesArray = edgesArray37;newnodesArray = nodesArray37}
+    if(s == 38){newedgesArray = edgesArray38;newnodesArray = nodesArray38}
+    if(s == 39){newedgesArray = edgesArray39;newnodesArray = nodesArray39}
+    if(s == 40){newedgesArray = edgesArray40;newnodesArray = nodesArray40}
+    if(s == 41){newedgesArray = edgesArray41;newnodesArray = nodesArray41}
+    if(s == 42){newedgesArray = edgesArray42;newnodesArray = nodesArray42}
+    if(s == 43){newedgesArray = edgesArray43;newnodesArray = nodesArray43}
+    if(s == 44){newedgesArray = edgesArray44;newnodesArray = nodesArray44}
+    if(s == 45){newedgesArray = edgesArray45;newnodesArray = nodesArray45}
+    if(s == 46){newedgesArray = edgesArray46;newnodesArray = nodesArray46}
+    if(s == 47){newedgesArray = edgesArray47;newnodesArray = nodesArray47}
+    if(s == 48){newedgesArray = edgesArray48;newnodesArray = nodesArray48}
+    if(s == 49){newedgesArray = edgesArray49;newnodesArray = nodesArray49}
+    if(s == 50){newedgesArray = edgesArray50;newnodesArray = nodesArray50}
+    if(s == 51){newedgesArray = edgesArray51;newnodesArray = nodesArray51}
+    if(s == 52){newedgesArray = edgesArray52;newnodesArray = nodesArray52}
+    if(s == 53){newedgesArray = edgesArray53;newnodesArray = nodesArray53}
+    if(s == 54){newedgesArray = edgesArray54;newnodesArray = nodesArray54}
+    if(s == 55){newedgesArray = edgesArray55;newnodesArray = nodesArray55}
+    if(s == 56){newedgesArray = edgesArray56;newnodesArray = nodesArray56}
+    if(s == 57){newedgesArray = edgesArray57;newnodesArray = nodesArray57}
+    if(s == 58){newedgesArray = edgesArray58;newnodesArray = nodesArray58}
+    if(s == 59){newedgesArray = edgesArray59;newnodesArray = nodesArray59}
+    if(s == 60){newedgesArray = edgesArray60;newnodesArray = nodesArray60}
+    if(s == 61){newedgesArray = edgesArray61;newnodesArray = nodesArray61}
+    if(s == 62){newedgesArray = edgesArray62;newnodesArray = nodesArray62}
+    if(s == 63){newedgesArray = edgesArray63;newnodesArray = nodesArray63}
+    if(s == 64){newedgesArray = edgesArray64;newnodesArray = nodesArray64}
+    if(s == 65){newedgesArray = edgesArray65;newnodesArray = nodesArray65}
+    if(s == 66){newedgesArray = edgesArray66;newnodesArray = nodesArray66}
+    if(s == 67){newedgesArray = edgesArray67;newnodesArray = nodesArray67}
+    if(s == 68){newedgesArray = edgesArray68;newnodesArray = nodesArray68}
+    if(s == 69){newedgesArray = edgesArray69;newnodesArray = nodesArray69}
+    if(s == 70){newedgesArray = edgesArray70;newnodesArray = nodesArray70}
+    if(s == 71){newedgesArray = edgesArray71;newnodesArray = nodesArray71}
+    if(s == 72){newedgesArray = edgesArray72;newnodesArray = nodesArray72}
+    if(s == 73){newedgesArray = edgesArray73;newnodesArray = nodesArray73}
+    if(s == 74){newedgesArray = edgesArray74;newnodesArray = nodesArray74}
+    if(s == 75){newedgesArray = edgesArray75;newnodesArray = nodesArray75}
+    if(s == 76){newedgesArray = edgesArray76;newnodesArray = nodesArray76}
+    if(s == 77){newedgesArray = edgesArray77;newnodesArray = nodesArray77}
+    if(s == 78){newedgesArray = edgesArray78;newnodesArray = nodesArray78}
+    if(s == 79){newedgesArray = edgesArray79;newnodesArray = nodesArray79}
+    if(s == 80){newedgesArray = edgesArray80;newnodesArray = nodesArray80}
+    if(s == 81){newedgesArray = edgesArray81;newnodesArray = nodesArray81}
+    if(s == 82){newedgesArray = edgesArray82;newnodesArray = nodesArray82}
+    if(s == 83){newedgesArray = edgesArray83;newnodesArray = nodesArray83}
+    if(s == 84){newedgesArray = edgesArray84;newnodesArray = nodesArray84}
+    if(s == 85){newedgesArray = edgesArray85;newnodesArray = nodesArray85}
+    if(s == 86){newedgesArray = edgesArray86;newnodesArray = nodesArray86}
+    if(s == 87){newedgesArray = edgesArray87;newnodesArray = nodesArray87}
+    if(s == 88){newedgesArray = edgesArray88;newnodesArray = nodesArray88}
+    if(s == 89){newedgesArray = edgesArray89;newnodesArray = nodesArray89}
+    if(s == 90){newedgesArray = edgesArray90;newnodesArray = nodesArray90}
+    if(s == 91){newedgesArray = edgesArray91;newnodesArray = nodesArray91}
+    if(s == 92){newedgesArray = edgesArray92;newnodesArray = nodesArray92}
+    if(s == 93){newedgesArray = edgesArray93;newnodesArray = nodesArray93}
+    if(s == 94){newedgesArray = edgesArray94;newnodesArray = nodesArray94}
+    if(s == 95){newedgesArray = edgesArray95;newnodesArray = nodesArray95}
+    if(s == 96){newedgesArray = edgesArray96;newnodesArray = nodesArray96}
+    if(s == 97){newedgesArray = edgesArray97;newnodesArray = nodesArray97}
+    if(s == 98){newedgesArray = edgesArray98;newnodesArray = nodesArray98}
+    if(s == 99){newedgesArray = edgesArray99;newnodesArray = nodesArray99}
+    if(s == 100){newedgesArray = edgesArray100;newnodesArray = nodesArray100}
+    if(s == 101){newedgesArray = edgesArray101;newnodesArray = nodesArray101}
+    if(s == 102){newedgesArray = edgesArray102;newnodesArray = nodesArray102}
+    if(s == 103){newedgesArray = edgesArray103;newnodesArray = nodesArray103}
+    if(s == 104){newedgesArray = edgesArray104;newnodesArray = nodesArray104}
+    if(s == 105){newedgesArray = edgesArray105;newnodesArray = nodesArray105}
+    if(s == 106){newedgesArray = edgesArray106;newnodesArray = nodesArray106}
+    if(s == 107){newedgesArray = edgesArray107;newnodesArray = nodesArray107}
+    if(s == 108){newedgesArray = edgesArray108;newnodesArray = nodesArray108}
+    if(s == 109){newedgesArray = edgesArray109;newnodesArray = nodesArray109}
+    if(s == 110){newedgesArray = edgesArray110;newnodesArray = nodesArray110}
+    if(s == 111){newedgesArray = edgesArray111;newnodesArray = nodesArray111}
+    if(s == 112){newedgesArray = edgesArray112;newnodesArray = nodesArray112}
+    if(s == 113){newedgesArray = edgesArray113;newnodesArray = nodesArray113}
+    if(s == 114){newedgesArray = edgesArray114;newnodesArray = nodesArray114}
+    if(s == 115){newedgesArray = edgesArray115;newnodesArray = nodesArray115}
+    if(s == 116){newedgesArray = edgesArray116;newnodesArray = nodesArray116}
+    if(s == 117){newedgesArray = edgesArray117;newnodesArray = nodesArray117}
+    if(s == 118){newedgesArray = edgesArray118;newnodesArray = nodesArray118}
+    if(s == 119){newedgesArray = edgesArray119;newnodesArray = nodesArray119}
+    if(s == 120){newedgesArray = edgesArray120;newnodesArray = nodesArray120}
+    if(s == 121){newedgesArray = edgesArray121;newnodesArray = nodesArray121}
+    if(s == 122){newedgesArray = edgesArray122;newnodesArray = nodesArray122}
+    if(s == 123){newedgesArray = edgesArray123;newnodesArray = nodesArray123}
+    if(s == 124){newedgesArray = edgesArray124;newnodesArray = nodesArray124}
+    if(s == 125){newedgesArray = edgesArray125;newnodesArray = nodesArray125}
+    if(s == 126){newedgesArray = edgesArray126;newnodesArray = nodesArray126}
+    if(s == 127){newedgesArray = edgesArray127;newnodesArray = nodesArray127}
+    if(s == 128){newedgesArray = edgesArray128;newnodesArray = nodesArray128}
+    if(s == 129){newedgesArray = edgesArray129;newnodesArray = nodesArray129}
+    if(s == 130){newedgesArray = edgesArray130;newnodesArray = nodesArray130}
+    if(s == 131){newedgesArray = edgesArray131;newnodesArray = nodesArray131}
+    if(s == 132){newedgesArray = edgesArray132;newnodesArray = nodesArray132}
+    if(s == 133){newedgesArray = edgesArray133;newnodesArray = nodesArray133}
+    if(s == 134){newedgesArray = edgesArray134;newnodesArray = nodesArray134}
+    if(s == 135){newedgesArray = edgesArray135;newnodesArray = nodesArray135}
+    if(s == 136){newedgesArray = edgesArray136;newnodesArray = nodesArray136}
+    if(s == 137){newedgesArray = edgesArray137;newnodesArray = nodesArray137}
+    if(s == 138){newedgesArray = edgesArray138;newnodesArray = nodesArray138}
+    if(s == 139){newedgesArray = edgesArray139;newnodesArray = nodesArray139}
+    if(s == 140){newedgesArray = edgesArray140;newnodesArray = nodesArray140}
+    if(s == 141){newedgesArray = edgesArray141;newnodesArray = nodesArray141}
+    if(s == 142){newedgesArray = edgesArray142;newnodesArray = nodesArray142}
+    if(s == 143){newedgesArray = edgesArray143;newnodesArray = nodesArray143}
+    if(s == 144){newedgesArray = edgesArray144;newnodesArray = nodesArray144}
+    if(s == 145){newedgesArray = edgesArray145;newnodesArray = nodesArray145}
+    if(s == 146){newedgesArray = edgesArray146;newnodesArray = nodesArray146}
+    if(s == 147){newedgesArray = edgesArray147;newnodesArray = nodesArray147}
+    if(s == 148){newedgesArray = edgesArray148;newnodesArray = nodesArray148}
+    if(s == 149){newedgesArray = edgesArray149;newnodesArray = nodesArray149}
+    if(s == 150){newedgesArray = edgesArray150;newnodesArray = nodesArray150}
+    if(s == 151){newedgesArray = edgesArray151;newnodesArray = nodesArray151}
+    if(s == 152){newedgesArray = edgesArray152;newnodesArray = nodesArray152}
+    if(s == 153){newedgesArray = edgesArray153;newnodesArray = nodesArray153}
+    if(s == 154){newedgesArray = edgesArray154;newnodesArray = nodesArray154}
+    if(s == 155){newedgesArray = edgesArray155;newnodesArray = nodesArray155}
+    if(s == 156){newedgesArray = edgesArray156;newnodesArray = nodesArray156}
+    if(s == 157){newedgesArray = edgesArray157;newnodesArray = nodesArray157}
+    if(s == 158){newedgesArray = edgesArray158;newnodesArray = nodesArray158}
+    if(s == 159){newedgesArray = edgesArray159;newnodesArray = nodesArray159}
+    if(s == 160){newedgesArray = edgesArray160;newnodesArray = nodesArray160}
+    if(s == 161){newedgesArray = edgesArray161;newnodesArray = nodesArray161}
+    if(s == 162){newedgesArray = edgesArray162;newnodesArray = nodesArray162}
+    if(s == 163){newedgesArray = edgesArray163;newnodesArray = nodesArray163}
+    if(s == 164){newedgesArray = edgesArray164;newnodesArray = nodesArray164}
+    if(s == 165){newedgesArray = edgesArray165;newnodesArray = nodesArray165}
+    if(s == 166){newedgesArray = edgesArray166;newnodesArray = nodesArray166}
+    if(s == 167){newedgesArray = edgesArray167;newnodesArray = nodesArray167}
+    if(s == 168){newedgesArray = edgesArray168;newnodesArray = nodesArray168}
+    if(s == 169){newedgesArray = edgesArray169;newnodesArray = nodesArray169}
+    if(s == 170){newedgesArray = edgesArray170;newnodesArray = nodesArray170}
+    if(s == 171){newedgesArray = edgesArray171;newnodesArray = nodesArray171}
+    if(s == 172){newedgesArray = edgesArray172;newnodesArray = nodesArray172}
+    if(s == 173){newedgesArray = edgesArray173;newnodesArray = nodesArray173}
+    if(s == 174){newedgesArray = edgesArray174;newnodesArray = nodesArray174}
+    if(s == 175){newedgesArray = edgesArray175;newnodesArray = nodesArray175}
+    if(s == 176){newedgesArray = edgesArray176;newnodesArray = nodesArray176}
+    if(s == 177){newedgesArray = edgesArray177;newnodesArray = nodesArray177}
+    if(s == 178){newedgesArray = edgesArray178;newnodesArray = nodesArray178}
+    if(s == 179){newedgesArray = edgesArray179;newnodesArray = nodesArray179}
+    if(s == 180){newedgesArray = edgesArray180;newnodesArray = nodesArray180}
+    if(s == 181){newedgesArray = edgesArray181;newnodesArray = nodesArray181}
+    if(s == 182){newedgesArray = edgesArray182;newnodesArray = nodesArray182}
+    if(s == 183){newedgesArray = edgesArray183;newnodesArray = nodesArray183}
+    if(s == 184){newedgesArray = edgesArray184;newnodesArray = nodesArray184}
+    if(s == 185){newedgesArray = edgesArray185;newnodesArray = nodesArray185}
+    if(s == 186){newedgesArray = edgesArray186;newnodesArray = nodesArray186}
+    if(s == 187){newedgesArray = edgesArray187;newnodesArray = nodesArray187}
+    if(s == 188){newedgesArray = edgesArray188;newnodesArray = nodesArray188}
+    if(s == 189){newedgesArray = edgesArray189;newnodesArray = nodesArray189}
+    if(s == 190){newedgesArray = edgesArray190;newnodesArray = nodesArray190}
+    if(s == 191){newedgesArray = edgesArray191;newnodesArray = nodesArray191}
+    if(s == 192){newedgesArray = edgesArray192;newnodesArray = nodesArray192}
+    if(s == 193){newedgesArray = edgesArray193;newnodesArray = nodesArray193}
+    if(s == 194){newedgesArray = edgesArray194;newnodesArray = nodesArray194}
+    if(s == 195){newedgesArray = edgesArray195;newnodesArray = nodesArray195}
+    if(s == 196){newedgesArray = edgesArray196;newnodesArray = nodesArray196}
+    if(s == 197){newedgesArray = edgesArray197;newnodesArray = nodesArray197}
+    if(s == 198){newedgesArray = edgesArray198;newnodesArray = nodesArray198}
+    if(s == 199){newedgesArray = edgesArray199;newnodesArray = nodesArray199}
+    if(s == 200){newedgesArray = edgesArray200;newnodesArray = nodesArray200}
+    if(s == 201){newedgesArray = edgesArray201;newnodesArray = nodesArray201}
+    if(s == 202){newedgesArray = edgesArray202;newnodesArray = nodesArray202}
+    if(s == 203){newedgesArray = edgesArray203;newnodesArray = nodesArray203}
+    if(s == 204){newedgesArray = edgesArray204;newnodesArray = nodesArray204}
+    if(s == 205){newedgesArray = edgesArray205;newnodesArray = nodesArray205}
+    if(s == 206){newedgesArray = edgesArray206;newnodesArray = nodesArray206}
+    if(s == 207){newedgesArray = edgesArray207;newnodesArray = nodesArray207}
+    if(s == 208){newedgesArray = edgesArray208;newnodesArray = nodesArray208}
+    if(s == 209){newedgesArray = edgesArray209;newnodesArray = nodesArray209}
+    if(s == 210){newedgesArray = edgesArray210;newnodesArray = nodesArray210}
+    if(s == 211){newedgesArray = edgesArray211;newnodesArray = nodesArray211}
+    if(s == 212){newedgesArray = edgesArray212;newnodesArray = nodesArray212}
+    if(s == 213){newedgesArray = edgesArray213;newnodesArray = nodesArray213}
+    if(s == 214){newedgesArray = edgesArray214;newnodesArray = nodesArray214}
+    if(s == 215){newedgesArray = edgesArray215;newnodesArray = nodesArray215}
+    if(s == 216){newedgesArray = edgesArray216;newnodesArray = nodesArray216}
+    if(s == 217){newedgesArray = edgesArray217;newnodesArray = nodesArray217}
+    if(s == 218){newedgesArray = edgesArray218;newnodesArray = nodesArray218}
+    if(s == 219){newedgesArray = edgesArray219;newnodesArray = nodesArray219}
+    if(s == 220){newedgesArray = edgesArray220;newnodesArray = nodesArray220}
+    if(s == 221){newedgesArray = edgesArray221;newnodesArray = nodesArray221}
+    if(s == 222){newedgesArray = edgesArray222;newnodesArray = nodesArray222}
+    if(s == 223){newedgesArray = edgesArray223;newnodesArray = nodesArray223}
+    if(s == 224){newedgesArray = edgesArray224;newnodesArray = nodesArray224}
+    if(s == 225){newedgesArray = edgesArray225;newnodesArray = nodesArray225}
+    if(s == 226){newedgesArray = edgesArray226;newnodesArray = nodesArray226}
+    if(s == 227){newedgesArray = edgesArray227;newnodesArray = nodesArray227}
+    if(s == 228){newedgesArray = edgesArray228;newnodesArray = nodesArray228}
+    if(s == 229){newedgesArray = edgesArray229;newnodesArray = nodesArray229}
+    if(s == 230){newedgesArray = edgesArray230;newnodesArray = nodesArray230}
+    if(s == 231){newedgesArray = edgesArray231;newnodesArray = nodesArray231}
+    if(s == 232){newedgesArray = edgesArray232;newnodesArray = nodesArray232}
+    if(s == 233){newedgesArray = edgesArray233;newnodesArray = nodesArray233}
+    if(s == 234){newedgesArray = edgesArray234;newnodesArray = nodesArray234}
+    if(s == 235){newedgesArray = edgesArray235;newnodesArray = nodesArray235}
+    if(s == 236){newedgesArray = edgesArray236;newnodesArray = nodesArray236}
+    if(s == 237){newedgesArray = edgesArray237;newnodesArray = nodesArray237}
+    if(s == 238){newedgesArray = edgesArray238;newnodesArray = nodesArray238}
+    if(s == 239){newedgesArray = edgesArray239;newnodesArray = nodesArray239}
+    if(s == 240){newedgesArray = edgesArray240;newnodesArray = nodesArray240}
+    if(s == 241){newedgesArray = edgesArray241;newnodesArray = nodesArray241}
+    if(s == 242){newedgesArray = edgesArray242;newnodesArray = nodesArray242}
+    if(s == 243){newedgesArray = edgesArray243;newnodesArray = nodesArray243}
+    if(s == 244){newedgesArray = edgesArray244;newnodesArray = nodesArray244}
+    if(s == 245){newedgesArray = edgesArray245;newnodesArray = nodesArray245}
+    if(s == 246){newedgesArray = edgesArray246;newnodesArray = nodesArray246}
+    if(s == 247){newedgesArray = edgesArray247;newnodesArray = nodesArray247}
+    if(s == 248){newedgesArray = edgesArray248;newnodesArray = nodesArray248}
+    if(s == 249){newedgesArray = edgesArray249;newnodesArray = nodesArray249}
+    if(s == 250){newedgesArray = edgesArray250;newnodesArray = nodesArray250}
+    if(s == 251){newedgesArray = edgesArray251;newnodesArray = nodesArray251}
+    if(s == 252){newedgesArray = edgesArray252;newnodesArray = nodesArray252}
+    if(s == 253){newedgesArray = edgesArray253;newnodesArray = nodesArray253}
+    if(s == 254){newedgesArray = edgesArray254;newnodesArray = nodesArray254}
+    if(s == 255){newedgesArray = edgesArray255;newnodesArray = nodesArray255}
+    if(s == 256){newedgesArray = edgesArray256;newnodesArray = nodesArray256}
+    if(s == 257){newedgesArray = edgesArray257;newnodesArray = nodesArray257}
+    if(s == 258){newedgesArray = edgesArray258;newnodesArray = nodesArray258}
+    if(s == 259){newedgesArray = edgesArray259;newnodesArray = nodesArray259}
+    if(s == 260){newedgesArray = edgesArray260;newnodesArray = nodesArray260}
+    if(s == 261){newedgesArray = edgesArray261;newnodesArray = nodesArray261}
+    if(s == 262){newedgesArray = edgesArray262;newnodesArray = nodesArray262}
+    if(s == 263){newedgesArray = edgesArray263;newnodesArray = nodesArray263}
+    if(s == 264){newedgesArray = edgesArray264;newnodesArray = nodesArray264}
+    if(s == 265){newedgesArray = edgesArray265;newnodesArray = nodesArray265}
+    if(s == 266){newedgesArray = edgesArray266;newnodesArray = nodesArray266}
+    if(s == 267){newedgesArray = edgesArray267;newnodesArray = nodesArray267}
+    if(s == 268){newedgesArray = edgesArray268;newnodesArray = nodesArray268}
+    if(s == 269){newedgesArray = edgesArray269;newnodesArray = nodesArray269}
+    if(s == 270){newedgesArray = edgesArray270;newnodesArray = nodesArray270}
+    if(s == 271){newedgesArray = edgesArray271;newnodesArray = nodesArray271}
+    if(s == 272){newedgesArray = edgesArray272;newnodesArray = nodesArray272}
+    if(s == 273){newedgesArray = edgesArray273;newnodesArray = nodesArray273}
+    if(s == 274){newedgesArray = edgesArray274;newnodesArray = nodesArray274}
+    if(s == 275){newedgesArray = edgesArray275;newnodesArray = nodesArray275}
+    if(s == 276){newedgesArray = edgesArray276;newnodesArray = nodesArray276}
+    if(s == 277){newedgesArray = edgesArray277;newnodesArray = nodesArray277}
+    if(s == 278){newedgesArray = edgesArray278;newnodesArray = nodesArray278}
+    if(s == 279){newedgesArray = edgesArray279;newnodesArray = nodesArray279}
+    if(s == 280){newedgesArray = edgesArray280;newnodesArray = nodesArray280}
+    if(s == 281){newedgesArray = edgesArray281;newnodesArray = nodesArray281}
+    if(s == 282){newedgesArray = edgesArray282;newnodesArray = nodesArray282}
+    if(s == 283){newedgesArray = edgesArray283;newnodesArray = nodesArray283}
+    if(s == 284){newedgesArray = edgesArray284;newnodesArray = nodesArray284}
+    if(s == 285){newedgesArray = edgesArray285;newnodesArray = nodesArray285}
+    if(s == 286){newedgesArray = edgesArray286;newnodesArray = nodesArray286}
+    if(s == 287){newedgesArray = edgesArray287;newnodesArray = nodesArray287}
+    if(s == 288){newedgesArray = edgesArray288;newnodesArray = nodesArray288}
+    if(s == 289){newedgesArray = edgesArray289;newnodesArray = nodesArray289}
+    if(s == 290){newedgesArray = edgesArray290;newnodesArray = nodesArray290}
+    if(s == 291){newedgesArray = edgesArray291;newnodesArray = nodesArray291}
+    if(s == 292){newedgesArray = edgesArray292;newnodesArray = nodesArray292}
+    if(s == 293){newedgesArray = edgesArray293;newnodesArray = nodesArray293}
+    if(s == 294){newedgesArray = edgesArray294;newnodesArray = nodesArray294}
+    if(s == 295){newedgesArray = edgesArray295;newnodesArray = nodesArray295}
+    if(s == 296){newedgesArray = edgesArray296;newnodesArray = nodesArray296}
+    if(s == 297){newedgesArray = edgesArray297;newnodesArray = nodesArray297}
+    if(s == 298){newedgesArray = edgesArray298;newnodesArray = nodesArray298}
+    if(s == 299){newedgesArray = edgesArray299;newnodesArray = nodesArray299}
+    if(s == 300){newedgesArray = edgesArray300;newnodesArray = nodesArray300}
+    if(s == 301){newedgesArray = edgesArray301;newnodesArray = nodesArray301}
+    if(s == 302){newedgesArray = edgesArray302;newnodesArray = nodesArray302}
+    if(s == 303){newedgesArray = edgesArray303;newnodesArray = nodesArray303}
+    if(s == 304){newedgesArray = edgesArray304;newnodesArray = nodesArray304}
+    if(s == 305){newedgesArray = edgesArray305;newnodesArray = nodesArray305}
+    if(s == 306){newedgesArray = edgesArray306;newnodesArray = nodesArray306}
+    if(s == 307){newedgesArray = edgesArray307;newnodesArray = nodesArray307}
+    if(s == 308){newedgesArray = edgesArray308;newnodesArray = nodesArray308}
+    if(s == 309){newedgesArray = edgesArray309;newnodesArray = nodesArray309}
+    if(s == 310){newedgesArray = edgesArray310;newnodesArray = nodesArray310}
+    if(s == 311){newedgesArray = edgesArray311;newnodesArray = nodesArray311}
+    if(s == 312){newedgesArray = edgesArray312;newnodesArray = nodesArray312}
+    if(s == 313){newedgesArray = edgesArray313;newnodesArray = nodesArray313}
+    if(s == 314){newedgesArray = edgesArray314;newnodesArray = nodesArray314}
+    if(s == 315){newedgesArray = edgesArray315;newnodesArray = nodesArray315}
+    if(s == 316){newedgesArray = edgesArray316;newnodesArray = nodesArray316}
+    if(s == 317){newedgesArray = edgesArray317;newnodesArray = nodesArray317}
+    if(s == 318){newedgesArray = edgesArray318;newnodesArray = nodesArray318}
+    if(s == 319){newedgesArray = edgesArray319;newnodesArray = nodesArray319}
+    if(s == 320){newedgesArray = edgesArray320;newnodesArray = nodesArray320}
+    if(s == 321){newedgesArray = edgesArray321;newnodesArray = nodesArray321}
+    if(s == 322){newedgesArray = edgesArray322;newnodesArray = nodesArray322}
+    if(s == 323){newedgesArray = edgesArray323;newnodesArray = nodesArray323}
+    if(s == 324){newedgesArray = edgesArray324;newnodesArray = nodesArray324}
+    if(s == 325){newedgesArray = edgesArray325;newnodesArray = nodesArray325}
+    if(s == 326){newedgesArray = edgesArray326;newnodesArray = nodesArray326}
+    if(s == 327){newedgesArray = edgesArray327;newnodesArray = nodesArray327}
+    if(s == 328){newedgesArray = edgesArray328;newnodesArray = nodesArray328}
+    if(s == 329){newedgesArray = edgesArray329;newnodesArray = nodesArray329}
+    if(s == 330){newedgesArray = edgesArray330;newnodesArray = nodesArray330}
+    if(s == 331){newedgesArray = edgesArray331;newnodesArray = nodesArray331}
+    if(s == 332){newedgesArray = edgesArray332;newnodesArray = nodesArray332}
+    if(s == 333){newedgesArray = edgesArray333;newnodesArray = nodesArray333}
+    if(s == 334){newedgesArray = edgesArray334;newnodesArray = nodesArray334}
+    if(s == 335){newedgesArray = edgesArray335;newnodesArray = nodesArray335}
+    if(s == 336){newedgesArray = edgesArray336;newnodesArray = nodesArray336}
+    if(s == 337){newedgesArray = edgesArray337;newnodesArray = nodesArray337}
+    if(s == 338){newedgesArray = edgesArray338;newnodesArray = nodesArray338}
+    if(s == 339){newedgesArray = edgesArray339;newnodesArray = nodesArray339}
+    if(s == 340){newedgesArray = edgesArray340;newnodesArray = nodesArray340}
+    if(s == 341){newedgesArray = edgesArray341;newnodesArray = nodesArray341}
+    if(s == 342){newedgesArray = edgesArray342;newnodesArray = nodesArray342}
+    if(s == 343){newedgesArray = edgesArray343;newnodesArray = nodesArray343}
+    if(s == 344){newedgesArray = edgesArray344;newnodesArray = nodesArray344}
+    if(s == 345){newedgesArray = edgesArray345;newnodesArray = nodesArray345}
+    if(s == 346){newedgesArray = edgesArray346;newnodesArray = nodesArray346}
+    if(s == 347){newedgesArray = edgesArray347;newnodesArray = nodesArray347}
+    if(s == 348){newedgesArray = edgesArray348;newnodesArray = nodesArray348}
+    if(s == 349){newedgesArray = edgesArray349;newnodesArray = nodesArray349}
+    if(s == 350){newedgesArray = edgesArray350;newnodesArray = nodesArray350}
+    if(s == 351){newedgesArray = edgesArray351;newnodesArray = nodesArray351}
+    if(s == 352){newedgesArray = edgesArray352;newnodesArray = nodesArray352}
+    if(s == 353){newedgesArray = edgesArray353;newnodesArray = nodesArray353}
+    if(s == 354){newedgesArray = edgesArray354;newnodesArray = nodesArray354}
+    if(s == 355){newedgesArray = edgesArray355;newnodesArray = nodesArray355}
+    if(s == 356){newedgesArray = edgesArray356;newnodesArray = nodesArray356}
+    if(s == 357){newedgesArray = edgesArray357;newnodesArray = nodesArray357}
+    if(s == 358){newedgesArray = edgesArray358;newnodesArray = nodesArray358}
+    if(s == 359){newedgesArray = edgesArray359;newnodesArray = nodesArray359}
+    if(s == 360){newedgesArray = edgesArray360;newnodesArray = nodesArray360}
+    if(s == 361){newedgesArray = edgesArray361;newnodesArray = nodesArray361}
+    if(s == 362){newedgesArray = edgesArray362;newnodesArray = nodesArray362}
+    if(s == 363){newedgesArray = edgesArray363;newnodesArray = nodesArray363}
+    if(s == 364){newedgesArray = edgesArray364;newnodesArray = nodesArray364}
+    if(s == 365){newedgesArray = edgesArray365;newnodesArray = nodesArray365}
+    if(s == 366){newedgesArray = edgesArray366;newnodesArray = nodesArray366}
+    if(s == 367){newedgesArray = edgesArray367;newnodesArray = nodesArray367}
+    if(s == 368){newedgesArray = edgesArray368;newnodesArray = nodesArray368}
+    if(s == 369){newedgesArray = edgesArray369;newnodesArray = nodesArray369}
+    if(s == 370){newedgesArray = edgesArray370;newnodesArray = nodesArray370}
+    if(s == 371){newedgesArray = edgesArray371;newnodesArray = nodesArray371}
+    if(s == 372){newedgesArray = edgesArray372;newnodesArray = nodesArray372}
+    if(s == 373){newedgesArray = edgesArray373;newnodesArray = nodesArray373}
+    if(s == 374){newedgesArray = edgesArray374;newnodesArray = nodesArray374}
+    if(s == 375){newedgesArray = edgesArray375;newnodesArray = nodesArray375}
+    if(s == 376){newedgesArray = edgesArray376;newnodesArray = nodesArray376}
+    if(s == 377){newedgesArray = edgesArray377;newnodesArray = nodesArray377}
+    if(s == 378){newedgesArray = edgesArray378;newnodesArray = nodesArray378}
+    if(s == 379){newedgesArray = edgesArray379;newnodesArray = nodesArray379}
+    if(s == 380){newedgesArray = edgesArray380;newnodesArray = nodesArray380}
+    if(s == 381){newedgesArray = edgesArray381;newnodesArray = nodesArray381}
+    if(s == 382){newedgesArray = edgesArray382;newnodesArray = nodesArray382}
+    if(s == 383){newedgesArray = edgesArray383;newnodesArray = nodesArray383}
+    if(s == 384){newedgesArray = edgesArray384;newnodesArray = nodesArray384}
+    if(s == 385){newedgesArray = edgesArray385;newnodesArray = nodesArray385}
+    if(s == 386){newedgesArray = edgesArray386;newnodesArray = nodesArray386}
+    if(s == 387){newedgesArray = edgesArray387;newnodesArray = nodesArray387}
+    if(s == 388){newedgesArray = edgesArray388;newnodesArray = nodesArray388}
+    if(s == 389){newedgesArray = edgesArray389;newnodesArray = nodesArray389}
+    if(s == 390){newedgesArray = edgesArray390;newnodesArray = nodesArray390}
+    if(s == 391){newedgesArray = edgesArray391;newnodesArray = nodesArray391}
+    if(s == 392){newedgesArray = edgesArray392;newnodesArray = nodesArray392}
+    if(s == 393){newedgesArray = edgesArray393;newnodesArray = nodesArray393}
+    if(s == 394){newedgesArray = edgesArray394;newnodesArray = nodesArray394}
+    if(s == 395){newedgesArray = edgesArray395;newnodesArray = nodesArray395}
+    if(s == 396){newedgesArray = edgesArray396;newnodesArray = nodesArray396}
+    if(s == 397){newedgesArray = edgesArray397;newnodesArray = nodesArray397}
+    if(s == 398){newedgesArray = edgesArray398;newnodesArray = nodesArray398}
+    if(s == 399){newedgesArray = edgesArray399;newnodesArray = nodesArray399}
+    if(s == 400){newedgesArray = edgesArray400;newnodesArray = nodesArray400}
+    if(s == 401){newedgesArray = edgesArray401;newnodesArray = nodesArray401}
+    if(s == 402){newedgesArray = edgesArray402;newnodesArray = nodesArray402}
+    if(s == 403){newedgesArray = edgesArray403;newnodesArray = nodesArray403}
+    if(s == 404){newedgesArray = edgesArray404;newnodesArray = nodesArray404}
+    if(s == 405){newedgesArray = edgesArray405;newnodesArray = nodesArray405}
+    if(s == 406){newedgesArray = edgesArray406;newnodesArray = nodesArray406}
+    if(s == 407){newedgesArray = edgesArray407;newnodesArray = nodesArray407}
+    if(s == 408){newedgesArray = edgesArray408;newnodesArray = nodesArray408}
+    if(s == 409){newedgesArray = edgesArray409;newnodesArray = nodesArray409}
+    if(s == 410){newedgesArray = edgesArray410;newnodesArray = nodesArray410}
+    if(s == 411){newedgesArray = edgesArray411;newnodesArray = nodesArray411}
+    if(s == 412){newedgesArray = edgesArray412;newnodesArray = nodesArray412}
+    if(s == 413){newedgesArray = edgesArray413;newnodesArray = nodesArray413}
+    if(s == 414){newedgesArray = edgesArray414;newnodesArray = nodesArray414}
+    if(s == 415){newedgesArray = edgesArray415;newnodesArray = nodesArray415}
+    if(s == 416){newedgesArray = edgesArray416;newnodesArray = nodesArray416}
+    if(s == 417){newedgesArray = edgesArray417;newnodesArray = nodesArray417}
+    if(s == 418){newedgesArray = edgesArray418;newnodesArray = nodesArray418}
+    if(s == 419){newedgesArray = edgesArray419;newnodesArray = nodesArray419}
+    if(s == 420){newedgesArray = edgesArray420;newnodesArray = nodesArray420}
+    if(s == 421){newedgesArray = edgesArray421;newnodesArray = nodesArray421}
+    if(s == 422){newedgesArray = edgesArray422;newnodesArray = nodesArray422}
+    if(s == 423){newedgesArray = edgesArray423;newnodesArray = nodesArray423}
+    if(s == 424){newedgesArray = edgesArray424;newnodesArray = nodesArray424}
+    if(s == 425){newedgesArray = edgesArray425;newnodesArray = nodesArray425}
+    if(s == 426){newedgesArray = edgesArray426;newnodesArray = nodesArray426}
+    if(s == 427){newedgesArray = edgesArray427;newnodesArray = nodesArray427}
+    if(s == 428){newedgesArray = edgesArray428;newnodesArray = nodesArray428}
+    if(s == 429){newedgesArray = edgesArray429;newnodesArray = nodesArray429}
+    if(s == 430){newedgesArray = edgesArray430;newnodesArray = nodesArray430}
+    if(s == 431){newedgesArray = edgesArray431;newnodesArray = nodesArray431}
+    if(s == 432){newedgesArray = edgesArray432;newnodesArray = nodesArray432}
+    if(s == 433){newedgesArray = edgesArray433;newnodesArray = nodesArray433}
+    if(s == 434){newedgesArray = edgesArray434;newnodesArray = nodesArray434}
+    if(s == 435){newedgesArray = edgesArray435;newnodesArray = nodesArray435}
+    if(s == 436){newedgesArray = edgesArray436;newnodesArray = nodesArray436}
+    if(s == 437){newedgesArray = edgesArray437;newnodesArray = nodesArray437}
+    if(s == 438){newedgesArray = edgesArray438;newnodesArray = nodesArray438}
+    if(s == 439){newedgesArray = edgesArray439;newnodesArray = nodesArray439}
+    if(s == 440){newedgesArray = edgesArray440;newnodesArray = nodesArray440}
+    if(s == 441){newedgesArray = edgesArray441;newnodesArray = nodesArray441}
+    if(s == 442){newedgesArray = edgesArray442;newnodesArray = nodesArray442}
+    if(s == 443){newedgesArray = edgesArray443;newnodesArray = nodesArray443}
+    if(s == 444){newedgesArray = edgesArray444;newnodesArray = nodesArray444}
+    if(s == 445){newedgesArray = edgesArray445;newnodesArray = nodesArray445}
+    if(s == 446){newedgesArray = edgesArray446;newnodesArray = nodesArray446}
+    if(s == 447){newedgesArray = edgesArray447;newnodesArray = nodesArray447}
+    if(s == 448){newedgesArray = edgesArray448;newnodesArray = nodesArray448}
+    if(s == 449){newedgesArray = edgesArray449;newnodesArray = nodesArray449}
+    if(s == 450){newedgesArray = edgesArray450;newnodesArray = nodesArray450}
+    if(s == 451){newedgesArray = edgesArray451;newnodesArray = nodesArray451}
+    if(s == 452){newedgesArray = edgesArray452;newnodesArray = nodesArray452}
+    if(s == 453){newedgesArray = edgesArray453;newnodesArray = nodesArray453}
+    if(s == 454){newedgesArray = edgesArray454;newnodesArray = nodesArray454}
+    if(s == 455){newedgesArray = edgesArray455;newnodesArray = nodesArray455}
+    if(s == 456){newedgesArray = edgesArray456;newnodesArray = nodesArray456}
+    if(s == 457){newedgesArray = edgesArray457;newnodesArray = nodesArray457}
+    if(s == 458){newedgesArray = edgesArray458;newnodesArray = nodesArray458}
+    if(s == 459){newedgesArray = edgesArray459;newnodesArray = nodesArray459}
+    if(s == 460){newedgesArray = edgesArray460;newnodesArray = nodesArray460}
+    if(s == 461){newedgesArray = edgesArray461;newnodesArray = nodesArray461}
+    if(s == 462){newedgesArray = edgesArray462;newnodesArray = nodesArray462}
+    if(s == 463){newedgesArray = edgesArray463;newnodesArray = nodesArray463}
+    if(s == 464){newedgesArray = edgesArray464;newnodesArray = nodesArray464}
+    if(s == 465){newedgesArray = edgesArray465;newnodesArray = nodesArray465}
+    if(s == 466){newedgesArray = edgesArray466;newnodesArray = nodesArray466}
+    if(s == 467){newedgesArray = edgesArray467;newnodesArray = nodesArray467}
+    if(s == 468){newedgesArray = edgesArray468;newnodesArray = nodesArray468}
+    if(s == 469){newedgesArray = edgesArray469;newnodesArray = nodesArray469}
+    if(s == 470){newedgesArray = edgesArray470;newnodesArray = nodesArray470}
+    if(s == 471){newedgesArray = edgesArray471;newnodesArray = nodesArray471}
+    if(s == 472){newedgesArray = edgesArray472;newnodesArray = nodesArray472}
+    if(s == 473){newedgesArray = edgesArray473;newnodesArray = nodesArray473}
+    if(s == 474){newedgesArray = edgesArray474;newnodesArray = nodesArray474}
+    if(s == 475){newedgesArray = edgesArray475;newnodesArray = nodesArray475}
+    if(s == 476){newedgesArray = edgesArray476;newnodesArray = nodesArray476}
+    if(s == 477){newedgesArray = edgesArray477;newnodesArray = nodesArray477}
+    if(s == 478){newedgesArray = edgesArray478;newnodesArray = nodesArray478}
+    if(s == 479){newedgesArray = edgesArray479;newnodesArray = nodesArray479}
+    if(s == 480){newedgesArray = edgesArray480;newnodesArray = nodesArray480}
+    if(s == 481){newedgesArray = edgesArray481;newnodesArray = nodesArray481}
+    if(s == 482){newedgesArray = edgesArray482;newnodesArray = nodesArray482}
+    if(s == 483){newedgesArray = edgesArray483;newnodesArray = nodesArray483}
+    if(s == 484){newedgesArray = edgesArray484;newnodesArray = nodesArray484}
+    if(s == 485){newedgesArray = edgesArray485;newnodesArray = nodesArray485}
+    if(s == 486){newedgesArray = edgesArray486;newnodesArray = nodesArray486}
+    if(s == 487){newedgesArray = edgesArray487;newnodesArray = nodesArray487}
+    if(s == 488){newedgesArray = edgesArray488;newnodesArray = nodesArray488}
+    if(s == 489){newedgesArray = edgesArray489;newnodesArray = nodesArray489}
+    if(s == 490){newedgesArray = edgesArray490;newnodesArray = nodesArray490}
+    if(s == 491){newedgesArray = edgesArray491;newnodesArray = nodesArray491}
+    if(s == 492){newedgesArray = edgesArray492;newnodesArray = nodesArray492}
+    if(s == 493){newedgesArray = edgesArray493;newnodesArray = nodesArray493}
+    if(s == 494){newedgesArray = edgesArray494;newnodesArray = nodesArray494}
+    if(s == 495){newedgesArray = edgesArray495;newnodesArray = nodesArray495}
+    if(s == 496){newedgesArray = edgesArray496;newnodesArray = nodesArray496}
+    if(s == 497){newedgesArray = edgesArray497;newnodesArray = nodesArray497}
+    if(s == 498){newedgesArray = edgesArray498;newnodesArray = nodesArray498}
+    if(s == 499){newedgesArray = edgesArray499;newnodesArray = nodesArray499}
+    nodes.add(newnodesArray);
+    edges.add(newedgesArray);
+
+    var options = {
+        scale: 0.7,
+        offset: {x:0,y:0},
+        animation: {
+          duration: 1000,
+          easingFunction: "easeInOutQuad"
+        }
+      };
+      // statusUpdateSpan.innerHTML = 'Focusing on node: ' + s;
+      // finishMessage = 'Node: ' + s + ' in focus.';
+      // alert(finishMessage);
+      network.focus(s, options);
+    }
+    startNetwork();
+</script>
+</div>
+<!--   <div class="column">
+    <input type="file" id="fileinput" />
+        <div id="ReadResult"></div>
+<div id="output"></div>
+  </div> -->
+
+</body>
+</html>
